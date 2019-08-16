@@ -3,11 +3,9 @@ import matplotlib.pyplot as plt
 
 def softmax(tau, attraction): #softmax action selection with attraction vector as parameters
     denom = np.sum(np.exp((attraction[:])/tau))
-    roulette = np.random.random()
-    p = 0
-    for i in range(len(attraction)):
-        p += np.exp(attraction[i]/tau)/denom
-        if p > roulette: return(int(i))
+    probabilities = np.exp(attraction/tau)/denom
+    choice = np.random.choice(range(len(probabilities)), p = probabilities)
+    return(choice)
 
 class agent:
     def __init__(self, tau, phi, style):
