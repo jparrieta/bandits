@@ -45,17 +45,24 @@ class bandit:
 class bandits:
     def __init__(self, n, delta, noise, style):
         self.arms = []
-        for i in range(n):
+        for i in range(n-1):
             mu = delta*np.random.random()
             self.arms.append(bandit(mu, noise, style[i]))
+        self.arms.append(bandit(1.0, noise, style[-1]))
     def measure(self, choice):
         return(self.arms[choice].measure())
             
 # Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.
+
+## Values
+### Bandits
 num_bandits = 2
+noise = 0.5
+style = ["Uniform", "Stable"]
+### Agents
 tau = 0.01/num_bandits
 phi = 0.1
-noise = 0.5
+### Simulation
 num_periods = 50
 num_reps = 2500
 
@@ -63,7 +70,7 @@ num_reps = 2500
 Alice = agent(tau = tau, phi = phi, num_bandits = num_bandits)
 Alice.reset(num_bandits = 2)
 ## Initialize bandits
-options = bandits(n = num_bandits, delta = 0.0, noise = noise, style = ["Uniform", "Stable"])
+options = bandits(n = num_bandits, delta = 0.0, noise = noise, style = style)
 options.arms[0].mean = 0.5 #0.622 leads to equiprobability between arms
 options.arms[1].mean = 0.5
 
@@ -80,7 +87,7 @@ for j in range(num_reps):
      all_attractions += Alice.attraction[0]
      last_choices.append(choice[-1])
 
-## Display simulation
+## Display results
 plt.scatter(range(num_periods), all_choices)
 plt.show()
 plt.scatter(range(num_periods), all_payoffs)
