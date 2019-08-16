@@ -51,8 +51,6 @@ class bandits:
     def measure(self, choice):
         return(self.arms[choice].measure())
             
-
-
 # Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.
 num_bandits = 2
 tau = 0.01/num_bandits
