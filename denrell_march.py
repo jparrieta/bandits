@@ -37,7 +37,7 @@ class bandit:
         self.mean = mu
         self.stdev = stdev
     def measure(self):
-        if self.style == "Uniform":  value = self.mean+self.stdev*(2*(np.random.random()-0.5))
+        if self.style == "Uniform":  value = self.mean+self.stdev*(np.random.random()-0.5)
         elif self.style == "Normal": value = np.random.normal(loc=self.mean, scale=self.stdev)
         elif self.style == "Stable": value = self.mean
         return(value)
@@ -57,7 +57,7 @@ class bandits:
 ## Values
 ### Bandits
 num_bandits = 2
-noise = 0.5
+noise = 1.0
 style = ["Uniform", "Stable"]
 ### Agents
 tau = 0.01/num_bandits
