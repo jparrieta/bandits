@@ -8,14 +8,17 @@ def softmax(tau, attraction): #softmax action selection with attraction vector a
     for i in range(len(attraction)):
         p += np.exp(attraction[i]/tau)/denom
         if p > roulette: return(int(i))
-        
+
 class agent:
-    def __init__(self, tau, phi):
+    def __init__(self, tau, phi, style):
         self.tau = tau
         self.phi = phi
-        self.style = "ERWA or 1/k"
+        self.style = style
     def update(self, choice, payoff):
-        self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
+        if self.style == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
+        elif self.style == "over k":
+            self.times[choice] += 1
+            self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1)
     def choose(self):
         return(softmax(self.tau, self.attraction))
     def learn(self, num_periods, bandits):
@@ -30,6 +33,7 @@ class agent:
         return([choices, payoffs])
     def reset(self, num_bandits):
          self.attraction = np.ones(num_bandits)/num_bandits
+         if self.style == "over k": self.times = np.zeros(num_bandits)
 
 class bandit:
     def __init__(self, mu, stdev, style):
@@ -58,19 +62,20 @@ class bandits:
 ### Bandits
 num_bandits = 2
 noise = 1.0
-style = ["Uniform", "Stable"]
+bandit_style = ["Uniform", "Stable"]
 ### Agents
 tau = 0.01/num_bandits
 phi = 0.1
+agent_style = "constant"
 ### Simulation
-num_periods = 50
+num_periods = 100
 num_reps = 2500
 
 ## Initialize agents
-Alice = agent(tau = tau, phi = phi, num_bandits = num_bandits)
+Alice = agent(tau = tau, phi = phi, style = agent_style)
 Alice.reset(num_bandits = 2)
 ## Initialize bandits
-options = bandits(n = num_bandits, delta = 0.0, noise = noise, style = style)
+options = bandits(n = num_bandits, delta = 0.0, noise = noise, style = bandit_style)
 options.arms[0].mean = 0.5 #0.622 leads to equiprobability between arms
 options.arms[1].mean = 0.5
 
