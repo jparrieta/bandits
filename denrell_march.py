@@ -10,7 +10,7 @@ def softmax(tau, attraction): #softmax action selection with attraction vector a
         if p > roulette: return(int(i))
         
 class agent:
-    def __init__(self, tau, phi, num_bandits):
+    def __init__(self, tau, phi):
         self.tau = tau
         self.phi = phi
         self.style = "ERWA or 1/k"
