@@ -44,13 +44,11 @@ class bandit:
         elif self.style == "Stable": value = self.mean
         return(value)
         
-class bandits:
-    def __init__(self, n, delta, noise, style):
+class bandits_D_M:
+    def __init__(self, noise):
         self.arms = []
-        for i in range(n-1):
-            mu = delta*np.random.random()
-            self.arms.append(bandit(mu, noise, style[i]))
-        self.arms.append(bandit(1.0, noise, style[-1]))
+        self.arms.append(bandit(mu = 0.5, stdev = noise, style = "Uniform")) #0.622 equiprobability at 100 periods # 0.6392 0.5 expected value at 1000 periods
+        self.arms.append(bandit(mu = 0.5, stdev = noise, style = "Stable"))
     def measure(self, choice):
         return(self.arms[choice].measure())
             
@@ -58,9 +56,7 @@ class bandits:
 
 ## Values
 ### Bandits
-num_bandits = 2
 noise = 1.0
-bandit_style = ["Uniform", "Stable"]
 ### Agents
 tau = 0.01/num_bandits
 phi = 0.1
@@ -73,9 +69,7 @@ num_reps = 2500
 Alice = agent(tau = tau, phi = phi, style = agent_style)
 Alice.reset(num_bandits = 2)
 ## Initialize bandits
-options = bandits(n = num_bandits, delta = 0.0, noise = noise, style = bandit_style)
-options.arms[0].mean = 0.5 #0.622 leads to equiprobability between arms
-options.arms[1].mean = 0.5
+options = bandits_D_M(noise = noise)
 
 ## Run simulation
 all_choices = np.zeros(num_periods)
