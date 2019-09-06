@@ -86,12 +86,6 @@ class agent:
 # 
 # #### Measure
 # The bandits perform one function, when called upon, they give one output, centered around a mean value and with an added noise. The style of bandit determines where the noise is drawn upon.
-# 
-# ### Bandits_D_M
-# This class creates the environment for the Denrell and March (2001) paper. In specific, two bandits. One with stable output and one with variable output. Both bandits have the same mean.
-# 
-# #### Measure
-# This is a wrapper function. The objective is that the agents ask the bandits class and not the specific bandit for the measurement. Then the bandits class is in charge of asking its bandit for the performance value. 
 
 # In[2]:
 
@@ -105,55 +99,71 @@ class bandit:
     def measure(self):
         if self.style == "Uniform":  value = self.mean+self.stdev*(np.random.random()-0.5)
         elif self.style == "Normal": value = np.random.normal(loc=self.mean, scale=self.stdev)
-        elif self.style == "Beta": value = 2*np.random.binomial(n=1, p=self.mean)-1
+        elif self.style == "Beta": value = np.random.binomial(n=1, p=self.mean)
         elif self.style == "Stable": value = self.mean
         return(value)
-        
-class bandits_D_M:
-    def __init__(self, noise):
-        self.arms = []
-        self.means = [0.5, 0.5]
-        self.arms.append(bandit(mu = 0.5, stdev = noise, style = "Uniform")) #0.622 equiprobability at 100 periods # 0.6392 0.5 expected value at 1000 periods
-        self.arms.append(bandit(mu = 0.5, stdev = 0.0, style = "Stable")) # noise = 0.0 is a redundancy
-    def measure(self, choice):
-        return(self.arms[choice].measure())
 
 
-# ### Denrell and March (2001)
+# ### Bandits_P_L
+# This class creates the environment for the Posen and Levinthal (2012) paper. In specific, 10 bandits drawn from a Beta(2,2) distribution of probabilities of drawing -1 or 1.
 # 
-# With these two building blocks, we can run a simulation to replicate the main finding of Denrell and March (2001).
-# 
-# Reference: Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.
-# 
-# #### 1. Initialize values
-# We start by initailizing the attributes of the simulation. The agents are given a set of tau and phi. The agents will learn for 50 periods and the results replicated 2500 times. We specify the noise to be 1, that means the bandits will draw from values between 0 and 1. Changes in the tau, phi, noise, and bandit style should change the learning. Changes in the number of repetitions lead to more noisy results.
+# #### Measure
+# This is a wrapper function. The objective is that the agents ask the bandits class and not the specific bandit for the measurement. Then the bandits class is in charge of asking its bandit for the performance value. 
 
 # In[3]:
 
 
-## Bandits
-noise = 1.0
-## Agents
-num_bandits = 2
-tau = 0.01/num_bandits
-phi = 0.1
-agent_style = "constant"
-## Simulation
-num_periods = 100
-num_reps = 2500
+class bandits_P_L:
+    def __init__(self, num_bandits, eta=0.0):
+        self.eta = eta
+        self.arms = []
+        self.means = np.zeros(num_bandits)
+        for i in range(num_bandits): 
+            mu = np.random.random()
+            self.arms.append(bandit(mu = 2.0, stdev = 2.0, style = "Beta")) 
+            self.means[i] = self.arms[i].mean
+    def measure(self, choice):
+        if np.random.binomial(n=1, p = self.eta):
+            for i in range(len(self.arms)):
+                if np.random.binomial(n=1, p = 0.5):
+                    self.arms[i] = bandit(mu = 2.0, stdev = 2.0, style = "Beta")
+                    self.means[i] = self.arms[i].mean
+        return(self.arms[choice].measure())
 
 
-# #### 2. Initialize agent and Bandits
-# We create one agent, Alice and initialize the environment for the paper. The bandits are created by specifying first two agents one drawn from an uniform distribution and the second one from a stable value.
+# ### Posen and Levinthal (2012)
+# 
+# We now need to change some aspects before we can replicate the Posent and Levinthal (2012) paper.
+# 
+# Reference: Posen, H. E., & Levinthal, D. A. (2012). Chasing a moving target: Exploitation and exploration in dynamic environments. Management Science, 58(3), 587-601.
+# 
+# #### 1. Initialize values
+# We start by initailizing the attributes of the simulation. The agents are given a tau but do not require phi because the learning method follows the 1/k+1 weighting. The agents will learn for 500 periods and the results replicated 1000 times. There is no noise value here because in this paper the bandits output either 1 or -1 with probabilities drawn from a beta(2,2) distribution. Changes in the tau, and bandit style should change the learning. Changes in the number of repetitions lead to more noisy results.
 
 # In[4]:
 
 
+## Bandit
+eta = 0.0
+num_bandits = 10
+## Agents
+phi = 0.1
+tau = 0.5/num_bandits
+agent_style = "over k"
+## Simulation
+num_periods = 500
+num_reps = 1000
+
+
+# #### 2. Initialize agent and Bandits
+# We create one agent, Alice and initialize the environment for the paper. We create an environment with 10 bnadits. These bandits are different from the ones in the other papers as they are created from a Beta distribution of payoff probabilties. 
+
+# In[5]:
+
+
 ## Initialize agents
 Alice = agent(tau = tau, phi = phi, style = agent_style)
-Alice.reset(num_bandits = 2)
-## Initialize bandits
-options = bandits_D_M(noise = noise)
+Alice.reset(num_bandits = num_bandits)
 
 
 # #### 3. Run simulation
@@ -161,69 +171,88 @@ options = bandits_D_M(noise = noise)
 # 
 # This takes some time.
 
-# In[5]:
+# In[6]:
 
 
 all_payoffs = np.zeros(num_periods)
-#all_knowledge = np.zeros(num_periods)
-#all_RE = np.zeros(num_periods)
-all_choices = np.zeros(num_periods)
-all_attractions = 0.0
-last_choices = []
+all_knowledge = np.zeros(num_periods)
+all_RE = np.zeros(num_periods)
 for j in range(num_reps):
-    Alice.reset(num_bandits = num_bandits)      
+    Alice.reset(num_bandits = num_bandits)
+    options = bandits_P_L(num_bandits = num_bandits, eta = eta)
     choice, payoff, knowledge = Alice.learn(num_periods, options)
     all_payoffs += payoff
-#    all_knowledge += knowledge          
+    all_knowledge += knowledge
     # Calculate exploration
-#    all_RE[0] += 1
-#    for i in range(len(choice)-1):
-#        if choice[i+1]!=choice[i]: all_RE[i+1] +=1
-    # Specific for this paper
-    all_choices += choice
-    all_attractions += Alice.attraction[0]
-    last_choices.append(choice[-1])
+    all_RE[0] += 1
+    for i in range(len(choice)-1):
+        if choice[i+1]!=choice[i]: all_RE[i+1] +=1
 
 
 # #### 4. Display results
 # 
-# ##### Choice as function of time
-# We present two plots. The first one presents the option chosen on every period. As on every period the agent can choose 0 or 1, what we plot in the y-axis is the number of times the stable option is chosen. As expected, the first period starts at 50% of the time and it increases towards a 100% as time goes by.
-# 
-
-# In[6]:
-
-
-plt.scatter(range(num_periods), all_choices)
-
-
-# ##### Performance as function of time
-# The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
+# ##### Amount of exploration
+# First we present the amount of exploration done by the agents. 
 
 # In[7]:
+
+
+plt.scatter(range(num_periods), all_RE)
+
+
+# #### Knowledge over time
+# Somthing quite sad happens for the amount of knowledge over time in this paper. Given the way the Bush Mossteller equation is updated, 1/k+1 and not with a constant update percentage, initial values have much more weight that later values. This leads to the system to erode knowledge. ***Fast!
+
+# In[8]:
+
+
+plt.scatter(range(num_periods), all_knowledge)
+
+
+# ##### Probability of Getting a Reward
+# The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
+
+# In[9]:
 
 
 plt.scatter(range(num_periods), all_payoffs)
 
 
-# #### Summary variables
-# ##### Percentage of time stability is chosen
-# Both options have the same performance. Nonetheless, the stable option is chosen 98% of the time after 50 periods. 
+# ##### Summary variables
+# ###### Total accumulated payoff
+# The bandits in this paper give a payoff of 1 or -1, so one needs to recalculate the total payoff. So that it matches what is shown in the paper. In the simulation I store the probability of getting a 1, here, the actual expected value.
 
-# In[8]:
-
-
-100*float(sum(last_choices))/num_reps
+# In[10]:
 
 
-# ##### Expected attraction
-# At the end ofthe each replication, we stored the attraction each agent had for the variable option. Below we cane see that agents perceived the average performance of this option to be 0.464, much lower than the 0.5 it really has.  
-
-# In[9]:
+print(sum(2*all_payoffs-num_reps)/num_reps)
 
 
-all_attractions/num_reps
+# ###### Fraction of exploration events
+# The average percentage of exploration events during the 500 periods.
+
+# In[11]:
+
+
+print(sum(all_RE)/(num_reps*num_periods))
+
+
+# ###### Knowledge
+# The average SSE knowledge at different stages of the simulation
+
+# In[12]:
+
+
+print("Knowledge at Period 400: " + str(all_knowledge[-101]/num_reps))
+print("Knowledge at Period 500: " + str(all_knowledge[-1]/num_reps))
 
 
 # #### 5. Exercise
-# Find the how high the mean of the variable option needs to be in order to be chosen 50% of the time at the end of the simulation. How does it related to the amount of noise in the option? How does it change if normal and not uniform noise is used? Or if we use the 1/(k+1) updating instead of constant updating?
+# What would happen if Posen and Levinthal had chosen other learning rules? They studied e-greedy but how about constant update? How woud it affect the erosion of knowledge and the adaptation of the agents?
+# 
+
+# In[ ]:
+
+
+
+
