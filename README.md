@@ -5,7 +5,7 @@ Currently, it includes the code for Denrell and March (2001) and Posen and Levin
 
 # run online
 You can run this code directly by opening the following binder in your browser or clicking the button below.
-It takes a while to load. After loading, click any \*.ipynb  and you will be able to run an interactive verion of the juPyter notebooks. You do not need to install Python or any dependencies, just run it from your browser.
+It takes a while to load. After loading, click any \*.ipynb  and you will be able to run an interactive verion of the Jupyter notebooks. You do not need to install Python or any dependencies, just run it from your browser.
 
 https://mybinder.org/v2/gh/jparrieta/bandits/master
 
