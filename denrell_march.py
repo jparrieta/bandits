@@ -49,17 +49,25 @@ def softmax(tau, attraction): #softmax action selection with attraction vector a
     return(choice)
 
 class agent:
-    def __init__(self, tau, phi, style):
+    def __init__(self, tau, phi, style_update, style_choose, e = 0.0):
         self.tau = tau
         self.phi = phi
-        self.style = style
+        self.style_update = style_update
+        self.style_choose = style_choose
+        self.e = e
     def update(self, choice, payoff):
-        if self.style == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
-        elif self.style == "over k":
+        if self.style_update == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
+        elif self.style_update == "over k":
             self.times[choice] += 1 #starts in 1
             self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1) # divides by 2
     def choose(self):
-        return(softmax(self.tau, self.attraction))
+        if self.style_choose == "softmax": choice = softmax(self.tau, self.attraction)
+        elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
+        elif self.style_choose == "e-greedy": 
+            best_choice = np.argmax(self.attraction)
+            other_choise = np.random.choice(range(self.attaction))
+            choice = np.random.choice([best_choice,other_choice], p = [1-e,e])
+        return(choice)
     def learn(self, num_periods, bandits):
         choices = []
         payoffs = []
@@ -75,7 +83,7 @@ class agent:
         return([choices, payoffs, knowledge])
     def reset(self, num_bandits):
         self.attraction = np.ones(num_bandits)/2.0
-        if self.style == "over k": self.times = np.zeros(num_bandits)
+        if self.style_update == "over k": self.times = np.zeros(num_bandits)
 
 
 # ## Environment
@@ -137,7 +145,8 @@ noise = 1.0
 num_bandits = 2
 tau = 0.01/num_bandits
 phi = 0.1
-agent_style = "constant"
+agent_style_update = "constant"
+agent_style_choose = "softmax"
 ## Simulation
 num_periods = 100
 num_reps = 2500
@@ -150,8 +159,8 @@ num_reps = 2500
 
 
 ## Initialize agents
-Alice = agent(tau = tau, phi = phi, style = agent_style)
-Alice.reset(num_bandits = 2)
+Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
+Alice.reset(num_bandits = num_bandits)
 ## Initialize bandits
 options = bandits_D_M(noise = noise)
 
