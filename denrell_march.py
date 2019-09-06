@@ -65,7 +65,7 @@ class agent:
         elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
         elif self.style_choose == "e-greedy": 
             best_choice = np.argmax(self.attraction)
-            other_choise = np.random.choice(range(self.attaction))
+            other_choice = np.random.choice(range(len(self.attraction)))
             choice = np.random.choice([best_choice,other_choice], p = [1-e,e])
         return(choice)
     def learn(self, num_periods, bandits):
@@ -145,8 +145,9 @@ noise = 1.0
 num_bandits = 2
 tau = 0.01/num_bandits
 phi = 0.1
-agent_style_update = "constant"
-agent_style_choose = "softmax"
+style_update = "constant"
+style_choose = "softmax"
+e = 0.0
 ## Simulation
 num_periods = 100
 num_reps = 2500
@@ -159,7 +160,7 @@ num_reps = 2500
 
 
 ## Initialize agents
-Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
+Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose, e = e)
 Alice.reset(num_bandits = num_bandits)
 ## Initialize bandits
 options = bandits_D_M(noise = noise)
