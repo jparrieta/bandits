@@ -7,7 +7,8 @@ The next code to be included is Puranam and Swamy (2016).
 
 In the last commit, I updated the Denrell and March (2001) code so that the agents are equivalent between simulations. 
 
-You can run this code directly by opening the following binder in your browser:
+You can run this code directly by opening the following binder in your browservor clicking the button below:
+
 https://mybinder.org/v2/gh/jparrieta/bandits/master
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jparrieta/bandits/master)
