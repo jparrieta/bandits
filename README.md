@@ -3,8 +3,8 @@ This repo includes the code for running some of the seminal papers on organizati
 
 Currently, it includes the code for Denrell and March (2001) and Posen and Levinthal (2012). The next code to be included is Puranam and Swamy (2016).
 
-# Run online
-You can run this code directly by opening the following binder in your browservor clicking the button below:
+# run online
+You can run this code directly by opening the following binder in your browser or clicking the button below:
 
 https://mybinder.org/v2/gh/jparrieta/bandits/master
 
