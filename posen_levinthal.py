@@ -49,12 +49,11 @@ def softmax(tau, attraction): #softmax action selection with attraction vector a
     return(choice)
 
 class agent:
-    def __init__(self, tau, phi, style_update, style_choose, e = 0.0):
+    def __init__(self, tau, phi, style_update, style_choose):
         self.tau = tau
         self.phi = phi
         self.style_update = style_update
         self.style_choose = style_choose
-        self.e = e
     def update(self, choice, payoff):
         if self.style_update == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
         elif self.style_update == "over k":
@@ -63,10 +62,10 @@ class agent:
     def choose(self):
         if self.style_choose == "softmax": choice = softmax(self.tau, self.attraction)
         elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
-        elif self.style_choose == "e-greedy": 
+        elif type(self.style_choose) == float: # for e-greedy you pass the e parameter only
             best_choice = np.argmax(self.attraction)
             other_choice = np.random.choice(range(len(self.attraction)))
-            choice = np.random.choice([best_choice,other_choice], p = [1-e,e])
+            choice = np.random.choice([best_choice,other_choice], p = [1-self.style_choose,self.style_choose])
         return(choice)
     def learn(self, num_periods, bandits):
         choices = []
@@ -99,21 +98,20 @@ class agent:
 
 
 class bandit:
-    def __init__(self, mu, stdev, style):
+    def __init__(self, mean, noise, style):
+        self.mean = mean
+        self.noise = noise
         self.style = style
-        self.mean = mu
-        self.stdev = stdev
-        if style == "Beta": self.mean = np.random.beta(a=mu, b=stdev)
     def measure(self):
-        if self.style == "Uniform":  value = self.mean+self.stdev*(np.random.random()-0.5)
-        elif self.style == "Normal": value = np.random.normal(loc=self.mean, scale=self.stdev)
-        elif self.style == "Beta": value = np.random.binomial(n=1, p=self.mean)
+        if self.style == "Uniform":  value = self.mean + self.noise*(np.random.random() - 0.5)
+        elif self.style == "Normal": value = np.random.normal(loc = self.mean, scale = self.noise)
+        elif self.style == "Beta": value = np.random.binomial(n = 1, p = self.mean)
         elif self.style == "Stable": value = self.mean
         return(value)
 
 
 # ### Bandits_P_L
-# This class creates the environment for the Posen and Levinthal (2012) paper. In specific, 10 bandits drawn from a Beta(2,2) distribution of probabilities of drawing -1 or 1.
+# This class creates the environment for the Posen and Levinthal (2012) paper. In specific, 10 bandits drawn from a Beta(2,2) distribution.
 # 
 # #### Measure
 # This is a wrapper function. The objective is that the agents ask the bandits class and not the specific bandit for the measurement. Then the bandits class is in charge of asking its bandit for the performance value. 
@@ -127,26 +125,27 @@ class bandits_P_L:
         self.arms = []
         self.means = np.zeros(num_bandits)
         for i in range(num_bandits): 
-            mu = np.random.random()
-            self.arms.append(bandit(mu = 2.0, stdev = 2.0, style = "Beta")) 
-            self.means[i] = self.arms[i].mean
+            self.means[i] = np.random.beta(a=2.0, b=2.0)
+            self.arms.append(bandit(mean = self.means[i], noise = 0.0, style = "Beta")) 
     def measure(self, choice):
         if np.random.binomial(n=1, p = self.eta):
             for i in range(len(self.arms)):
                 if np.random.binomial(n=1, p = 0.5):
-                    self.arms[i] = bandit(mu = 2.0, stdev = 2.0, style = "Beta")
-                    self.means[i] = self.arms[i].mean
+                    self.means[i] = np.random.beta(a=2.0, b=2.0)
+                    self.arms[i] = bandit(mean = self.means[i], noise = 0.0, style = "Beta")
         return(self.arms[choice].measure())
 
 
 # ### Posen and Levinthal (2012)
 # 
-# We now need to change some aspects before we can replicate the Posent and Levinthal (2012) paper.
+# With these two building blocks, we can run a simulation to replicate the main findings of Posen and Levinthal (2021).
 # 
 # Reference: Posen, H. E., & Levinthal, D. A. (2012). Chasing a moving target: Exploitation and exploration in dynamic environments. Management Science, 58(3), 587-601.
 # 
 # #### 1. Initialize values
 # We start by initailizing the attributes of the simulation. The agents are given a tau but do not require phi because the learning method follows the 1/k+1 weighting. The agents will learn for 500 periods and the results replicated 1000 times. There is no noise value here because in this paper the bandits output either 1 or -1 with probabilities drawn from a beta(2,2) distribution. Changes in the tau, and bandit style should change the learning. Changes in the number of repetitions lead to more noisy results.
+# 
+# **Note:** A phi value was added in case you want to explore how agents would differ if the do not update with the 1/k+1 mode
 
 # In[4]:
 
@@ -155,11 +154,10 @@ class bandits_P_L:
 eta = 0.0
 num_bandits = 10
 ## Agents
-phi = 0.1
+style_update = "over k" # "constant" or "over k"
+style_choose = "softmax" # "softmax", "greedy" or e value as float for e-greedy
+phi = 0.1 # not needed in "over k" updating mode
 tau = 0.5/num_bandits
-style_update = "over k"
-style_choose = "softmax"
-e = 0.0
 ## Simulation
 num_periods = 500
 num_reps = 1000
@@ -171,8 +169,7 @@ num_reps = 1000
 # In[5]:
 
 
-## Initialize agents
-Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose, e = e)
+Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
 Alice.reset(num_bandits = num_bandits)
 
 
@@ -253,8 +250,8 @@ print(sum(all_RE)/(num_reps*num_periods))
 # In[12]:
 
 
-print("Knowledge at Period 400: " + str(all_knowledge[-101]/num_reps))
-print("Knowledge at Period 500: " + str(all_knowledge[-1]/num_reps))
+print("Period 400: " + str(all_knowledge[-101]/num_reps))
+print("Period 500: " + str(all_knowledge[-1]/num_reps))
 
 
 # #### 5. Exercise
