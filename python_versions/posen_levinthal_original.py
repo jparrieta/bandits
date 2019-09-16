@@ -49,15 +49,13 @@ def softmax(tau, attraction): #softmax action selection with attraction vector a
     return(choice)
 
 class agent:
-    def __init__(self, tau, phi, style_update, style_choose):
+    def __init__(self, tau, phi, style_choose):
         self.tau = tau
         self.phi = phi
-        self.style_update = style_update
         self.style_choose = style_choose
     def choose(self):
         if self.style_choose == "softmax": choice = softmax(self.tau, self.attraction)
         elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
-        elif self.style_choose == "aspiration": choice = np.random.choice(range(len(self.attraction)), p = self.attraction)
         elif type(self.style_choose) == float: # for e-greedy you pass the e parameter only
             best_choice = np.argmax(self.attraction)
             other_choice = np.random.choice(range(len(self.attraction)))
@@ -78,25 +76,10 @@ class agent:
         return([choices, payoffs, knowledge])
     def reset(self, means, att):
         self.attraction = np.ones(len(means))/2.0
-        if self.style_update == "over k": self.times = np.zeros(len(means))
-        if self.style_update == "aspiration": 
-            self.aspiration = np.sum(att[:]*means[:])
-            if len(att) == len(means): self.attraction = np.asarray(att)/np.sum(att)
-            else: self.attraction = np.ones(len(means))/len(means)
+        self.times = np.zeros(len(means))
     def update(self, choice, payoff):
-        if self.style_update == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
-        elif self.style_update == "over k":
-            self.times[choice] += 1 #starts in 1
-            self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1) # divides by 2
-        elif self.style_update == "aspiration":
-            # update Choice
-            if payoff > self.aspiration: self.attraction[choice] += self.tau*(1.0-self.attraction[choice])
-            else: self.attraction[choice] = (1-self.tau)*self.attraction[choice]
-            # Update Others
-            others = np.arange(len(self.attraction)) != choice
-            self.attraction[others] = self.attraction[others]*((1.0-self.attraction[choice])/sum(self.attraction[others]))
-            # Update Aspiration
-            self.aspiration = self.aspiration*(1.0-self.phi) + payoff*self.phi
+        self.times[choice] += 1 #starts in 1
+        self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1) # divides by 2
 
 
 # ## Environment
@@ -112,16 +95,10 @@ class agent:
 
 
 class bandit:
-    def __init__(self, mean, noise, style):
+    def __init__(self, mean, noise = 0.0):
         self.mean = mean
         self.noise = noise
-        self.style = style
-    def measure(self):
-        if self.style == "Uniform":  value = self.mean + self.noise*(np.random.random() - 0.5)
-        elif self.style == "Normal": value = np.random.normal(loc = self.mean, scale = self.noise)
-        elif self.style == "Beta": value = np.random.binomial(n = 1, p = self.mean)
-        elif self.style == "Stable": value = self.mean
-        return(value)
+    def measure(self): return(np.random.binomial(n = 1, p = self.mean))
 
 
 # ### Bandits_P_L
@@ -141,7 +118,7 @@ class bandits_P_L:
         for i in range(num_bandits): self.make_bandit(i)
     def make_bandit(self, position):
         self.means[position] = np.random.beta(a=2.0, b=2.0)
-        self.arms[position] = bandit(mean = self.means[position], noise = 0.0, style = "Beta")
+        self.arms[position] = bandit(mean = self.means[position]) # noise is not needed
     def measure(self, choice):
         # Change some arms?
         if np.random.binomial(n=1, p = self.eta):
@@ -170,8 +147,7 @@ class bandits_P_L:
 eta = 0.0
 num_bandits = 10
 ## Agents
-style_update = "over k" # "constant", "over k" or "aspiration" 
-style_choose = "softmax" # "softmax", "greedy", "aspiration", or e value as float for e-greedy
+style_choose = "softmax" # "softmax", "greedy", or e value as float for e-greedy
 phi = 0.5 # not needed in "over k" updating mode
 tau = 0.5/num_bandits
 att_0 = np.ones(num_bandits)/2.0
@@ -186,7 +162,7 @@ num_reps = 1000
 # In[5]:
 
 
-Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
+Alice = agent(tau = tau, phi = phi, style_choose = style_choose)
 options = bandits_P_L(num_bandits = num_bandits, eta = eta)
 
 

@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Tutorial on Modeling of Learning Under Uncertainty
+# # Tutorial on Denrell and March (2001)
 # 
-# In this tutorial, you will be introduced to three modeling papers on reinforcement learning. These papers study the phenomenon of organizationa learning under uncertainty trough the use of agent based models who learn from n-Arm bandits.
+# In this tutorial, you will be introduced to a simple model that replicates the main finding from the paper by Jerker Denrell and Jim March, published in 2001 in Organization Science. 
 # 
-# The models we will study are:
-# 1. March and Denrell (2001)
-# This paper introduced the so called Hotstove effect. The idea being that if agents choose between two options with the same mean, one with variance in its feedback and one without, the agents will learn to choose the variant without variance.
+# This tutorial provides a barebones description of the model. If you want to explore a more flexible version or explore how different agents or bandit distributions would affect Jerker's and Jim's results please follow the denrell_march.ipynb tutorial.
 # 
-# 2. Posen and Levinthal (2012)
-# This paper expands the model from Denrell and March (2001) and studies how agents learn in an environment with ten options, all of them with variance. It studies the effects of different shocks and environmental changes as agents chase a moving target.
+# **Reference:** Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.
 # 
-# 3. Puranam and Swamy (2016)
-# This paper expands the model from Denrell and March (2001) through the process of coupled learning. Two agents, not one as before, learn of the perfoemance of two options. The catch is that the performance is based upon their coupled action and the agetns do not know what the other agent is doing. Through time the agents learn to cooperate. Interestingly, if agents start with the same choice, they reach the optimal choice faster than if they started with mixed choices. This holds even if they start choosing the wrong option.
 
 # # Basic Building Blocks
 # 
@@ -26,7 +21,7 @@
 # The agents choose one option based upon their attraction to this option. In this model, we use softmax as the rule for transforming the different attractions for each option into probabilities of choosing one option. Other rules as greedy and e-greedy are possible. The agent's level of exploration is determined by the parameter tau. A small tau leads to high exploitation, a high tau to infinite exploration. Due to limitations in the floating point operation we cannot use taus lower that 0.002.
 # 
 # ### 2. Update
-# Updating is done via the Bush-Mossteller equation. The parameter phi determins how much the agent updates its beliefs based upon new information. A value of zero leads to agents to not update their beliefs. A value of one to full update of beliefs. A mixture leads to what is known as an Exponentially Recency Weighted Average (Sutton and Barto, 1998). In Denrell and March (2001) and Puranam and Swamy (2016), we use a constant phi value. Posen and Levinthal use a varying phi for every trial. The phi varies according to 1/(ki+1) where ki is the number of times an option has been tried. 
+# Updating is done via the Bush-Mossteller equation. The parameter phi determins how much the agent updates its beliefs based upon new information. A value of zero leads to agents to not update their beliefs. A value of one to full update of beliefs. A mixture leads to what is known as an Exponentially Recency Weighted Average (Sutton and Barto, 1998). In Denrell and March (2001), we use a constant phi value. Agents in this paper as fully specified by providing them a tau and a phi value.
 # 
 # ### 3. Learn
 # Learn is a subroutine. It receives two parameters, the number of periods and the bandits to learn from. 
@@ -42,61 +37,34 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def softmax(tau, attraction): #softmax action selection with attraction vector as parameters
-    denom = np.sum(np.exp((attraction[:])/tau))
-    probabilities = np.exp(attraction/tau)/denom
-    choice = np.random.choice(range(len(probabilities)), p = probabilities)
-    return(choice)
-
 class agent:
-    def __init__(self, tau, phi, style_update, style_choose):
+    def __init__(self, tau, phi):
         self.tau = tau
         self.phi = phi
-        self.style_update = style_update
-        self.style_choose = style_choose
-    def choose(self):
-        if self.style_choose == "softmax": choice = softmax(self.tau, self.attraction)
-        elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
-        elif self.style_choose == "aspiration": choice = np.random.choice(range(len(self.attraction)), p = self.attraction)
-        elif type(self.style_choose) == float: # for e-greedy you pass the e parameter only
-            best_choice = np.argmax(self.attraction)
-            other_choice = np.random.choice(range(len(self.attraction)))
-            choice = np.random.choice([best_choice,other_choice], p = [1-self.style_choose,self.style_choose])
-        return(choice)
+    def choose(self): return(np.random.choice(range(len(self.attraction)), p = self.attraction))
     def learn(self, num_periods, bandits):
         choices = []
         payoffs = []
-        knowledge = []
         for i in range(num_periods):
             choice = self.choose()
             payoff = bandits.measure(choice)
-            nugget = 1-sum((self.attraction-bandits.means)**2)
             self.update(choice, payoff)
             choices.append(choice)
             payoffs.append(payoff)
-            knowledge.append(nugget)
-        return([choices, payoffs, knowledge])
+        return([choices, payoffs])
     def reset(self, means, att):
-        self.attraction = np.ones(len(means))/2.0
-        if self.style_update == "over k": self.times = np.zeros(len(means))
-        if self.style_update == "aspiration": 
-            self.aspiration = np.sum(att[:]*means[:])
-            if len(att) == len(means): self.attraction = np.asarray(att)/np.sum(att)
-            else: self.attraction = np.ones(len(means))/len(means)
+        if len(att) == num_bandits: self.attraction = np.asarray(att)
+        else: self.attraction = np.ones(num_bandits)/2.0
+        self.aspiration = np.sum(att[:]*means[:])
     def update(self, choice, payoff):
-        if self.style_update == "constant": self.attraction[choice] += self.phi*(payoff-self.attraction[choice])
-        elif self.style_update == "over k":
-            self.times[choice] += 1 #starts in 1
-            self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1) # divides by 2
-        elif self.style_update == "aspiration":
-            # update Choice
-            if payoff > self.aspiration: self.attraction[choice] += self.tau*(1.0-self.attraction[choice])
-            else: self.attraction[choice] = (1-self.tau)*self.attraction[choice]
-            # Update Others
-            others = np.arange(len(self.attraction)) != choice
-            self.attraction[others] = self.attraction[others]*((1.0-self.attraction[choice])/sum(self.attraction[others]))
-            # Update Aspiration
-            self.aspiration = self.aspiration*(1.0-self.phi) + payoff*self.phi
+        # update Choice
+        if payoff > self.aspiration: self.attraction[choice] += self.tau*(1.0-self.attraction[choice])
+        else: self.attraction[choice] = (1-self.tau)*self.attraction[choice]
+        # Update Others
+        others = np.arange(len(self.attraction)) != choice
+        self.attraction[others] = self.attraction[others]*((1.0-self.attraction[choice])/sum(self.attraction[others]))
+        # Update Aspiration
+        self.aspiration = self.aspiration*(1.0-self.phi) + payoff*self.phi
 
 
 # ## Environment
@@ -112,21 +80,14 @@ class agent:
 
 
 class bandit:
-    def __init__(self, mean, noise, style):
+    def __init__(self, mean, noise):
         self.mean = mean
         self.noise = noise
-        self.style = style
-    def measure(self):
-        if self.style == "Uniform":  value = self.mean + self.noise*(np.random.random() - 0.5)
-        elif self.style == "Normal": value = np.random.normal(loc = self.mean, scale = self.noise)
-        elif self.style == "Beta": value = np.random.binomial(n = 1, p = self.mean)
-        elif self.style == "Stable": value = self.mean
-        return(value)
+    def measure(self): return(np.random.normal(loc = self.mean, scale = self.noise))
 
 
-# 
 # ### Bandits_D_M
-# This class creates the environment for the Denrell and March (2001) paper. In specific, two bandits. One with stable output and one with variable output. Both bandits have the same mean.
+# This class creates the environment for the paper. In specific, two bandits. One with stable output and one with variable output. Both bandits have the same mean.
 # 
 # #### Measure
 # This is a wrapper function. The objective is that the agents ask the bandits class and not the specific bandit for the measurement. Then the bandits class is in charge of asking its bandit for the performance value. 
@@ -137,18 +98,16 @@ class bandit:
 class bandits_D_M:
     def __init__(self, mean,  noise): 
         self.means = [mean, mean]
-        self.arms = [bandit(mean = mean, noise = noise, style = "Normal"),
-                     bandit(mean = mean, noise = 0.0, style = "Normal")]
+        self.arms = [bandit(mean = mean, noise = noise),
+                     bandit(mean = mean, noise = 0.0)]
         self.means = np.zeros(len(self.arms))
         for i in range(len(self.arms)): self.means[i] = self.arms[i].mean
     def measure(self, choice): return(self.arms[choice].measure())
 
 
-# ### Denrell and March (2001)
+# ### Simulation
 # 
 # With these two building blocks, we can run a simulation to replicate the main finding of Denrell and March (2001).
-# 
-# Reference: Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.
 # 
 # #### 1. Initialize values
 # We start by initailizing the attributes of the simulation. The agents are given a set of tau and phi. The agents will learn for 50 periods and the results replicated 2500 times. We specify the noise to be 1, that means the bandits will draw from values between 0 and 1. Changes in the tau, phi, noise, and bandit style should change the learning. Changes in the number of repetitions lead to more noisy results.
@@ -161,11 +120,9 @@ mean = 10.0
 noise = 10.0
 num_bandits = 2
 ## Agents
-style_update = "aspiration" # "constant", "over k", or "aspiration"
-style_choose =  "aspiration" # "softmax", "greedy", "aspiration" or e value as float for e-greedy
 tau = 0.5 # b in Denrell and March
 phi = 0.5 # a in Denrell and March
-start_p = np.ones(num_bandits)/num_bandits
+start_p = [1.0/2.0, 1.0/2.0]
 ## Simulation
 num_periods = 50
 num_reps = 5000
@@ -177,7 +134,9 @@ num_reps = 5000
 # In[5]:
 
 
-Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
+## Initialize agents
+Alice = agent(tau = tau, phi = phi)
+## Initialize bandits
 options = bandits_D_M(mean = mean, noise = noise)
 
 
@@ -190,23 +149,15 @@ options = bandits_D_M(mean = mean, noise = noise)
 
 
 all_payoffs = np.zeros(num_periods)
-all_knowledge = np.zeros(num_periods)
-all_RE = np.zeros(num_periods)
 all_choices = np.zeros(num_periods)
-all_attractions = 0.0
+all_aspiration = 0.0
 last_choices = []
 for j in range(num_reps):
-    Alice.reset(means = options.means, att = start_p)     
-    choice, payoff, knowledge = Alice.learn(num_periods, options)
+    Alice.reset(options.means, np.ones(num_bandits)/2.0)  
+    choice, payoff = Alice.learn(num_periods, options)
     all_payoffs += payoff
-    all_knowledge += knowledge          
-    # Calculate exploration
-    all_RE[0] += 1
-    for i in range(len(choice)-1):
-        if choice[i+1]!=choice[i]: all_RE[i+1] +=1
-    # Specific for this paper
     all_choices += choice
-    all_attractions += Alice.attraction[0]
+    all_aspiration += Alice.aspiration
     last_choices.append(choice[-1])
 
 
@@ -247,8 +198,8 @@ plt.scatter(range(num_periods), all_payoffs)
 # In[10]:
 
 
-all_attractions/num_reps
+all_aspiration/num_reps
 
 
-# #### 5. Exercise
+# # Exercise
 # Find the how high the mean of the variable option needs to be in order to be chosen 50% of the time at the end of the simulation. How does it related to the amount of noise in the option? How does it change if normal and not uniform noise is used? Or if we use the 1/(k+1) updating instead of constant updating?
