@@ -3,9 +3,9 @@ This repo includes the code for running some of the seminal papers on organizati
 
 Currently, it includes the code for Denrell and March (2001) and Posen and Levinthal (2012).
 
-There are thre veriants of Denrell and March (2001) the original is based on the learning and selection algortihms they show in their paper. The basic version is a simpler version based on softmax. The last version denrell_march is one that employs more flexible agents and bandits. 
+There are three variants of Denrell and March (2001) the original is based on the learning and selection algortihms they show in their paper. The basic version is a simpler version based on softmax. The last version denrell_march is one that employs more flexible agents and bandits. 
 
-There are two versions of Posen and Levinthal (2012), the original is the one used in the paper. The posen_levinthal version is more flexible with multiple learning and bandit generation fucntions
+There are two versions of Posen and Levinthal (2012), the original is the one used in the paper. The posen_levinthal version is more flexible with multiple learning and bandit generation fucntions.
 
 The next code to be included is Puranam and Swamy (2016).  
 
