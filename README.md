@@ -12,7 +12,7 @@ It takes a while to load. After loading, click any \*.ipynb  and you will be abl
 **Link:** https://mybinder.org/v2/gh/jparrieta/bandits/master
 
 # log  
-
+**190926:** Homogenized the aspiration level updating 
 **190916:** Added a full_tutorial where with all papers one after the other. Added direct replications of both papers.  
 **190907:** Added a simplified version of Denrell and March (2001) with just uniform bandits and constant phi updating.    
 **190906:** Added Posen and Levinthal (2012), updated Denrell and March (2001), added e-greedy, greedy, and beta-distribution draws.    
