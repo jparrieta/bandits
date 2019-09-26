@@ -105,13 +105,13 @@ class agent:
             self.attraction[choice] += (payoff-self.attraction[choice])/(self.times[choice]+1) # divides by 2
         elif self.style_update == "aspiration":
             # update Choice
-            if payoff > self.aspiration: self.attraction[choice] += self.tau*(1.0-self.attraction[choice])
-            else: self.attraction[choice] = (1-self.tau)*self.attraction[choice]
+            if payoff > self.aspiration: self.attraction[choice] += self.phi*(1.0-self.attraction[choice])
+            else: self.attraction[choice] = (1-self.phi)*self.attraction[choice]
             # Update Others
             others = np.arange(len(self.attraction)) != choice
             self.attraction[others] = self.attraction[others]*((1.0-self.attraction[choice])/sum(self.attraction[others]))
             # Update Aspiration
-            self.aspiration = self.aspiration*(1.0-self.phi) + payoff*self.phi
+            self.aspiration = self.aspiration*(1.0-self.tau) + payoff*self.tau
 
 
 # ## Bandit  
@@ -230,7 +230,7 @@ num_reps = 5000
 # In[6]:
 
 
-Alice = agent(tau = b, phi = a, style_update = style_update, style_choose = style_choose)
+Alice = agent(tau = a, phi = b, style_update = style_update, style_choose = style_choose)
 options = bandits_D_M(means = [X,Y], noise = S)
 
 

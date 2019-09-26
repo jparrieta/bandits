@@ -58,13 +58,13 @@ class agent:
         self.aspiration = np.sum(att[:]*means[:])
     def update(self, choice, payoff):
         # update Choice
-        if payoff > self.aspiration: self.attraction[choice] += self.tau*(1.0-self.attraction[choice])
-        else: self.attraction[choice] = (1-self.tau)*self.attraction[choice]
+        if payoff > self.aspiration: self.attraction[choice] += self.phi*(1.0-self.attraction[choice])
+        else: self.attraction[choice] = (1-self.phi)*self.attraction[choice]
         # Update Others
         others = np.arange(len(self.attraction)) != choice
         self.attraction[others] = self.attraction[others]*((1.0-self.attraction[choice])/sum(self.attraction[others]))
         # Update Aspiration
-        self.aspiration = self.aspiration*(1.0-self.phi) + payoff*self.phi
+        self.aspiration = self.aspiration*(1.0-self.tau) + payoff*self.tau
 
 
 # ## Environment
@@ -135,7 +135,7 @@ num_reps = 5000
 # In[5]:
 
 
-Alice = agent(tau = b, phi = a)
+Alice = agent(tau = a, phi = b)
 options = bandits_D_M(means = [X,Y], noise = S)
 
 
@@ -194,7 +194,7 @@ plt.scatter(range(num_periods), all_payoffs)
 # ### Average aspiration level at the end of each simulation   
 # The average aspiration at the end of each simulation was:
 
-# In[11]:
+# In[10]:
 
 
 all_aspiration/num_reps
