@@ -75,13 +75,15 @@ class agent:
         elif self.style_choose == "aspiration": choice = np.random.choice(range(len(self.attraction)), p = self.attraction)
         elif type(self.style_choose) == float: # for e-greedy you pass the e parameter only
             best_choice = np.argmax(self.attraction)
-            other_choice = np.random.choice(range(len(self.attraction)))
+            other_choice = best_choice
+            while other_choice == best_choice: other_choice = np.random.choice(range(len(self.attraction))) #lazy
             choice = np.random.choice([best_choice,other_choice], p = [1-self.style_choose,self.style_choose])
         return(choice)
     def learn(self, num_periods, bandits):
         choices = []
         payoffs = []
         knowledge = []
+        RE = [1]
         for i in range(num_periods):
             choice = self.choose()
             payoff = bandits.measure(choice)
@@ -90,7 +92,8 @@ class agent:
             choices.append(choice)
             payoffs.append(payoff)
             knowledge.append(nugget)
-        return([choices, payoffs, knowledge])
+            if len(choices) > 1: RE.append(1*(choices[-1] != choices[-2]))
+        return([choices, payoffs, knowledge, RE])
     def reset(self, means, att):
         self.attraction = np.ones(len(means))/2.0
         if self.style_update == "over k": self.times = np.zeros(len(means))
@@ -158,6 +161,7 @@ class bandits_D_M:
         self.means = np.zeros(len(self.arms))
         for i in range(len(self.arms)): self.means[i] = self.arms[i].mean
     def measure(self, choice): return(self.arms[choice].measure())
+    def reset(self): pass # needed for compatibility
 
 
 # ###  2. Bandits_P_L: Posen and Levinthal (2012)
@@ -195,6 +199,34 @@ class bandits_P_L:
         for i in range(len(self.arms)): self.make_bandit(i)
 
 
+# ## Run Simulation
+# This tutorail runs several simulations. All of them follow the same structure, they include agents, and environments. The agents explore the environment for a number of periods and then this is repeated again. The iterated process is stored and used for our analyses.  
+# This method automates this process to avoid repeating every time. 
+
+# In[5]:
+
+
+def run_simulation(num_periods, Alice, options, start_p):
+    all_payoffs = np.zeros(num_periods)
+    all_knowledge = np.zeros(num_periods)
+    all_RE = np.zeros(num_periods)
+    all_choices = np.zeros(num_periods)
+    all_aspiration = 0.0
+    last_choices = []
+    for j in range(num_reps):
+        Alice.reset(means = options.means, att = start_p)     
+        options.reset()
+        choice, payoff, knowledge, re = Alice.learn(num_periods, options)
+        all_payoffs += payoff
+        all_knowledge += knowledge 
+        all_RE += re
+        # Specific for this paper
+        all_choices += choice
+        if Alice.style_choose == "aspiration": all_aspiration += Alice.aspiration
+        last_choices.append(choice[-1])
+    return([all_payoffs, all_knowledge, all_RE, all_choices, all_aspiration, last_choices])
+
+
 # 
 # # Denrell and March (2001)
 # 
@@ -205,7 +237,7 @@ class bandits_P_L:
 # 
 # **Note:** The bandits were specificed as outputing 0 and 1. Posen and Denrell mix their outputs as their environment outputs -1 and 1. I go back to that notation when I estimate the accumulated payoff. However for the bulk of the simulation, I estimate the probability of success only.
 
-# In[5]:
+# In[6]:
 
 
 ## Bandits
@@ -227,7 +259,7 @@ num_reps = 5000
 # ## 2. Initialize agent and Bandits
 # We create one agent, Alice and initialize the environment for the paper. The bandits are created by specifying first two agents one drawn from an uniform distribution and the second one from a stable value.
 
-# In[6]:
+# In[7]:
 
 
 Alice = agent(tau = a, phi = b, style_update = style_update, style_choose = style_choose)
@@ -235,32 +267,14 @@ options = bandits_D_M(means = [X,Y], noise = S)
 
 
 # ## 3. Run simulation
-# Having the agent and environment we can run a simulation. We initialize two arrays, one for payoff and one for choices. Additionally, we create an empty list to store the last choices of the agents and one value to save the attraction to the option with variable output after every replication of the simulation is finished.
+# Having the agent and environment we can run a simulation. We give the environment and the agents and run it.  
 # 
-# This takes some time.
+# * **This takes some time.**
 
-# In[7]:
+# In[8]:
 
 
-all_payoffs = np.zeros(num_periods)
-all_choices = np.zeros(num_periods)
-all_aspiration = 0.0
-last_choices = []
-all_knowledge = np.zeros(num_periods)
-all_RE = np.zeros(num_periods)
-for j in range(num_reps):
-    Alice.reset(means = options.means, att = start_p)     
-    choice, payoff, knowledge = Alice.learn(num_periods, options)
-    all_payoffs += payoff
-    all_knowledge += knowledge          
-    # Calculate exploration
-    all_RE[0] += 1
-    for i in range(len(choice)-1):
-        if choice[i+1]!=choice[i]: all_RE[i+1] +=1
-    # Specific for this paper
-    all_choices += choice
-    all_aspiration += Alice.aspiration
-    last_choices.append(choice[-1])
+all_payoffs, all_knowledge, all_RE, all_choices, all_aspiration, last_choices = run_simulation(num_periods, Alice, options, start_p)
 
 
 # ## 4. Display results
@@ -269,7 +283,7 @@ for j in range(num_reps):
 # We present two plots. The first one presents the option chosen on every period. As on every period the agent can choose 0 or 1, what we plot in the y-axis is the number of times the stable option is chosen. As expected, the first period starts at 50% of the time and it increases towards a 100% as time goes by.
 # 
 
-# In[8]:
+# In[9]:
 
 
 plt.scatter(range(num_periods), all_choices)
@@ -278,7 +292,7 @@ plt.scatter(range(num_periods), all_choices)
 # ### Performance as function of time
 # The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
 
-# In[9]:
+# In[10]:
 
 
 plt.scatter(range(num_periods), all_payoffs)
@@ -288,7 +302,7 @@ plt.scatter(range(num_periods), all_payoffs)
 # #### Fraction of individuals who choose the risky alternative
 # Both options have the same performance. Nonetheless, the risky option is chosen less than 1% of the time after 50 periods when b = 0.5, and around 30% of time if b = 0.1. X=Y=S=10.0 
 
-# In[10]:
+# In[11]:
 
 
 100*(1-float(sum(last_choices))/num_reps)
@@ -297,7 +311,7 @@ plt.scatter(range(num_periods), all_payoffs)
 # #### Average aspiration level at the end of each simulation   
 # The average aspiration at the end of each simulation was:
 
-# In[11]:
+# In[12]:
 
 
 all_aspiration/num_reps
@@ -314,7 +328,7 @@ all_aspiration/num_reps
 # 
 # **Note:** A phi value was added in case you want to explore how agents would differ if the do not update with the 1/k+1 mode.  
 
-# In[12]:
+# In[13]:
 
 
 ## Bandit
@@ -332,9 +346,9 @@ num_reps = 1000
 
 
 # ## 2. Initialize agent and Bandits
-# We create one agent, Alice and initialize the environment for the paper. We create an environment with 10 bnadits. These bandits are different from the ones in the other papers as they are created from a Beta distribution of payoff probabilties. 
+# Having the agent and environment we can run a simulation. We give the environment and the agents and run it. 
 
-# In[13]:
+# In[14]:
 
 
 Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
@@ -346,22 +360,10 @@ options = bandits_P_L(num_bandits = num_bandits, eta = eta)
 # 
 # This takes some time.
 
-# In[14]:
+# In[15]:
 
 
-all_payoffs = np.zeros(num_periods)
-all_knowledge = np.zeros(num_periods)
-all_RE = np.zeros(num_periods)
-for j in range(num_reps):
-    Alice.reset(means = options.means, att = np.ones(num_bandits)/2.0)
-    options.reset()
-    choice, payoff, knowledge = Alice.learn(num_periods, options)
-    all_payoffs += payoff
-    all_knowledge += knowledge
-    # Calculate exploration
-    all_RE[0] += 1
-    for i in range(len(choice)-1):
-        if choice[i+1]!=choice[i]: all_RE[i+1] +=1
+all_payoffs, all_knowledge, all_RE, all_choices, all_aspiration, last_choices = run_simulation(num_periods, Alice, options, start_p)
 
 
 # ## 4. Display results
@@ -369,7 +371,7 @@ for j in range(num_reps):
 # ### Amount of exploration
 # First we present the amount of exploration done by the agents. 
 
-# In[15]:
+# In[16]:
 
 
 plt.scatter(range(num_periods), all_RE)
@@ -378,7 +380,7 @@ plt.scatter(range(num_periods), all_RE)
 # ### Knowledge over time
 # Somthing quite sad happens for the amount of knowledge over time in this paper. Given the way the Bush Mossteller equation is updated, 1/k+1 and not with a constant update percentage, initial values have much more weight that later values. This leads to the system to erode knowledge. **Fast!**
 
-# In[16]:
+# In[17]:
 
 
 plt.scatter(range(num_periods), all_knowledge)
@@ -387,7 +389,7 @@ plt.scatter(range(num_periods), all_knowledge)
 # ### Probability of Getting a Reward
 # The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
 
-# In[17]:
+# In[18]:
 
 
 plt.scatter(range(num_periods), all_payoffs)
@@ -399,7 +401,7 @@ plt.scatter(range(num_periods), all_payoffs)
 # 
 # The result shown below is the performance of Figure 1 in Posen and Levinthal (2012).
 
-# In[18]:
+# In[19]:
 
 
 print(sum(2*all_payoffs-num_reps)/num_reps)
@@ -408,7 +410,7 @@ print(sum(2*all_payoffs-num_reps)/num_reps)
 # #### Fraction of exploration events
 # The average percentage of exploration events during the 500 periods, see Figure 1 in Posen and Levinthal (2012) for comparison. 
 
-# In[19]:
+# In[20]:
 
 
 print(sum(all_RE)/(num_reps*num_periods))
@@ -417,7 +419,7 @@ print(sum(all_RE)/(num_reps*num_periods))
 # #### Knowledge  
 # The average SSE knowledge at different stages of the simulation. This result is shown in Figure 1 of Posen and Levinthal (2012) and in Figure 4 when the turbulence changes.
 
-# In[20]:
+# In[21]:
 
 
 print("Period 400: " + str(all_knowledge[-101]/num_reps))
@@ -433,6 +435,14 @@ print("Period 500: " + str(all_knowledge[-1]/num_reps))
 # * Denrell, J., & March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.   
 # * Posen, H. E., & Levinthal, D. A. (2012). Chasing a moving target: Exploitation and exploration in dynamic environments. Management Science, 58(3), 587-601.
 # * Puranam, P., & Swamy, M. (2016). How initial representations shape coupled learning processes. Organization Science, 27(2), 323-335.
+# 
+# **Note:** The code below builds the table of contents
+
+# In[23]:
+
+
+get_ipython().run_cell_magic('javascript', '', "$.getScript('https://kmahelona.github.io/ipython_notebook_goodies/ipython_notebook_toc.js')")
+
 
 # In[ ]:
 

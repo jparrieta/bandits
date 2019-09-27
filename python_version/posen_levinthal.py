@@ -58,7 +58,8 @@ class agent:
         elif self.style_choose == "greedy": choice = np.argmax(self.attraction)
         elif type(self.style_choose) == float: # for e-greedy you pass the e parameter only
             best_choice = np.argmax(self.attraction)
-            other_choice = np.random.choice(range(len(self.attraction)))
+            other_choice = best_choice
+            while other_choice == best_choice: other_choice = np.random.choice(range(len(self.attraction))) #lazy
             choice = np.random.choice([best_choice,other_choice], p = [1-self.style_choose,self.style_choose])
         return(choice)
     def learn(self, num_periods, bandits):
