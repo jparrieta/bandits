@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>posen_levinthal_original</title>
+<title>posen_levinthal</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13168,7 +13168,8 @@ The period starts by asking the agent to choose an option. The payoff of the opt
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">==</span> <span class="s2">&quot;greedy&quot;</span><span class="p">:</span> <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span> <span class="c1"># for e-greedy you pass the e parameter only</span>
             <span class="n">best_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)</span>
-            <span class="n">other_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)))</span>
+            <span class="n">other_choice</span> <span class="o">=</span> <span class="n">best_choice</span>
+            <span class="k">while</span> <span class="n">other_choice</span> <span class="o">==</span> <span class="n">best_choice</span><span class="p">:</span> <span class="n">other_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)))</span> <span class="c1">#lazy</span>
             <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">best_choice</span><span class="p">,</span><span class="n">other_choice</span><span class="p">],</span> <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span><span class="p">])</span>
         <span class="k">return</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">bandits</span><span class="p">):</span>
