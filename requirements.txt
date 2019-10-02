@@ -1,4 +1,0 @@
-matplotlib >= 1.4.3
-numpy >= 1.13.3
-pandas >= 0.20.3
-random >= 2.1
