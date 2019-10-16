@@ -13165,7 +13165,7 @@ The period starts by asking the agent to choose an option. The payoff of the opt
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[147]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -13178,11 +13178,12 @@ The period starts by asking the agent to choose an option. The payoff of the opt
     <span class="k">return</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">agent</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">style_update</span><span class="p">,</span> <span class="n">style_choose</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">style_update</span><span class="p">,</span> <span class="n">style_choose</span><span class="p">,</span> <span class="n">style_start</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="n">phi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">=</span> <span class="n">style_update</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">=</span> <span class="n">style_choose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_start</span> <span class="o">=</span> <span class="n">style_start</span>
     <span class="k">def</span> <span class="nf">choose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">==</span> <span class="s2">&quot;softmax&quot;</span><span class="p">:</span> <span class="n">choice</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">==</span> <span class="s2">&quot;greedy&quot;</span><span class="p">:</span> <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">)</span>
@@ -13209,12 +13210,19 @@ The period starts by asking the agent to choose an option. The payoff of the opt
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> <span class="n">RE</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
         <span class="k">return</span><span class="p">([</span><span class="n">choices</span><span class="p">,</span> <span class="n">payoffs</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">,</span> <span class="n">RE</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">att</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;over k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;aspiration&quot;</span><span class="p">:</span> 
-            <span class="bp">self</span><span class="o">.</span><span class="n">aspiration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">att</span><span class="p">[:]</span><span class="o">*</span><span class="n">means</span><span class="p">[:])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">att</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">att</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">att</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_start</span> <span class="o">==</span> <span class="s2">&quot;same&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;over k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;aspiration&quot;</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">aspiration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">att</span><span class="p">[:]</span><span class="o">*</span><span class="n">means</span><span class="p">[:])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">att</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">att</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">att</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">)</span>       
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_start</span> <span class="o">==</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">att</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;over k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;aspiration&quot;</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">aspiration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">att</span><span class="p">[:]</span><span class="o">*</span><span class="n">means</span><span class="p">[:])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span> <span class="o">=</span> <span class="n">att</span>
     <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choice</span><span class="p">,</span> <span class="n">payoff</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="o">*</span><span class="p">(</span><span class="n">payoff</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">attraction</span><span class="p">[</span><span class="n">choice</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_update</span> <span class="o">==</span> <span class="s2">&quot;over k&quot;</span><span class="p">:</span>
@@ -13248,7 +13256,7 @@ The bandit is a simple structure. It has a mean and a standard deviation. The st
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">bandit</span><span class="p">:</span>
@@ -13285,7 +13293,7 @@ The bandit is a simple structure. It has a mean and a standard deviation. The st
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">bandits_D_M</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span>  <span class="n">noise</span><span class="p">):</span> 
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">noise</span><span class="p">):</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">means</span> <span class="o">=</span> <span class="n">means</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arms</span> <span class="o">=</span> <span class="p">[</span><span class="n">bandit</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="n">means</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span><span class="p">,</span> <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;Normal&quot;</span><span class="p">),</span>
                      <span class="n">bandit</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="n">means</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">noise</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;Stable&quot;</span><span class="p">)]</span>
@@ -13314,7 +13322,7 @@ The second role of this function is to determine if a bandit needs to be changed
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">bandits_P_L</span><span class="p">:</span>
@@ -13344,6 +13352,40 @@ The second role of this function is to determine if a bandit needs to be changed
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="3.-Bandits_P_S:-Puranam-and-Swamy-(2016)">3. Bandits_P_S: Puranam and Swamy (2016)<a class="anchor-link" href="#3.-Bandits_P_S:-Puranam-and-Swamy-(2016)">&#182;</a></h3><p>This class creates the environment for the Puranam and Swamy (2012) paper. In specific, 4 bandits with two entries each and with means specified from game thoerretic values.</p>
+<h4 id="Measure">Measure<a class="anchor-link" href="#Measure">&#182;</a></h4><p>The bandits in Puranam and Swamy are much simpler than our prior examples. The model does have a complication due to the coupled learning but we will present this later on.</p>
+<h4 id="Make-Bandit">Make Bandit<a class="anchor-link" href="#Make-Bandit">&#182;</a></h4><p>There are technically just two bandits, even though Puranam and Swamy model m=10. One bandit gives a high output when both choices are the same and accurate, and if not it gives a low value.</p>
+<h4 id="Reset">Reset<a class="anchor-link" href="#Reset">&#182;</a></h4><p>This function does not operate.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[215]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">bandits_P_S</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_bandits</span><span class="p">,</span> <span class="n">bingo</span><span class="p">,</span> <span class="n">val_max</span><span class="p">,</span> <span class="n">val_min</span><span class="p">):</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">means</span> <span class="o">=</span> <span class="n">val_min</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">means</span><span class="p">[</span><span class="n">bingo</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arms</span> <span class="o">=</span> <span class="p">[</span><span class="n">bandit</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="n">val_max</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;Stable&quot;</span><span class="p">),</span>
+                     <span class="n">bandit</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="n">val_min</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;Stable&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bingo</span> <span class="o">=</span> <span class="n">bingo</span>
+    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choice1</span><span class="p">,</span> <span class="n">choice2</span><span class="p">):</span> 
+        <span class="k">if</span> <span class="n">choice1</span> <span class="o">==</span> <span class="n">choice2</span> <span class="ow">and</span> <span class="n">choice1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">bingo</span><span class="p">:</span> <span class="k">return</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">measure</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">measure</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">pass</span> <span class="c1"># needed for compatibility</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Run-Simulation">Run Simulation<a class="anchor-link" href="#Run-Simulation">&#182;</a></h2><p>This tutorail runs several simulations. All of them follow the same structure, they include agents, and environments. The agents explore the environment for a number of periods and then this is repeated again. The iterated process is stored and used for our analyses.<br>
 This method automates this process to avoid repeating every time.</p>
 
@@ -13352,25 +13394,25 @@ This method automates this process to avoid repeating every time.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[173]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_p</span><span class="p">):</span>
-    <span class="n">all_payoffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_periods</span><span class="p">)</span>
-    <span class="n">all_knowledge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_periods</span><span class="p">)</span>
-    <span class="n">all_RE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_periods</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_attraction</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">all_payoffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_periods</span><span class="p">))</span>
+    <span class="n">all_knowledge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_periods</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">all_RE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_periods</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
     <span class="n">all_choices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_periods</span><span class="p">)</span>
-    <span class="n">all_aspiration</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">all_aspiration</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
     <span class="n">last_choices</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_reps</span><span class="p">):</span>
-        <span class="n">Alice</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">means</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">means</span><span class="p">,</span> <span class="n">att</span> <span class="o">=</span> <span class="n">start_p</span><span class="p">)</span>     
+        <span class="n">Alice</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">means</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">means</span><span class="p">,</span> <span class="n">att</span> <span class="o">=</span> <span class="n">start_attraction</span><span class="p">)</span>     
         <span class="n">options</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="n">choice</span><span class="p">,</span> <span class="n">payoff</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">,</span> <span class="n">re</span> <span class="o">=</span> <span class="n">Alice</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">num_periods</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
-        <span class="n">all_payoffs</span> <span class="o">+=</span> <span class="n">payoff</span>
-        <span class="n">all_knowledge</span> <span class="o">+=</span> <span class="n">knowledge</span> 
-        <span class="n">all_RE</span> <span class="o">+=</span> <span class="n">re</span>
+        <span class="n">all_payoffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">all_payoffs</span><span class="p">,</span> <span class="n">payoff</span><span class="p">)</span>
+        <span class="n">all_knowledge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">all_knowledge</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">)</span>
+        <span class="n">all_RE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">all_RE</span><span class="p">,</span> <span class="n">re</span><span class="p">)</span>
         <span class="c1"># Specific for this paper</span>
-        <span class="n">all_choices</span> <span class="o">+=</span> <span class="n">choice</span>
+        <span class="n">all_choices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">all_choices</span><span class="p">,</span> <span class="n">choice</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">Alice</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">==</span> <span class="s2">&quot;aspiration&quot;</span><span class="p">:</span> <span class="n">all_aspiration</span> <span class="o">+=</span> <span class="n">Alice</span><span class="o">.</span><span class="n">aspiration</span>
         <span class="n">last_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">choice</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span><span class="p">([</span><span class="n">all_payoffs</span><span class="p">,</span> <span class="n">all_knowledge</span><span class="p">,</span> <span class="n">all_RE</span><span class="p">,</span> <span class="n">all_choices</span><span class="p">,</span> <span class="n">all_aspiration</span><span class="p">,</span> <span class="n">last_choices</span><span class="p">])</span>
@@ -13406,7 +13448,7 @@ This method automates this process to avoid repeating every time.</p>
 <span class="n">style_choose</span> <span class="o">=</span>  <span class="s2">&quot;aspiration&quot;</span> <span class="c1"># &quot;softmax&quot;, &quot;greedy&quot;, &quot;aspiration&quot; or e value as float for e-greedy</span>
 <span class="n">a</span> <span class="o">=</span> <span class="mf">0.5</span>
 <span class="n">b</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="n">start_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span><span class="o">/</span><span class="n">num_bandits</span> <span class="c1"># can use a list of values</span>
+<span class="n">start_attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span><span class="o">/</span><span class="n">num_bandits</span> <span class="c1"># can use a list of values</span>
 <span class="c1">## Simulation</span>
 <span class="n">num_periods</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="n">num_reps</span> <span class="o">=</span> <span class="mi">5000</span>
@@ -13455,7 +13497,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">all_payoffs</span><span class="p">,</span> <span class="n">all_knowledge</span><span class="p">,</span> <span class="n">all_RE</span><span class="p">,</span> <span class="n">all_choices</span><span class="p">,</span> <span class="n">all_aspiration</span><span class="p">,</span> <span class="n">last_choices</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_p</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">payoffs</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">,</span> <span class="n">RE</span><span class="p">,</span> <span class="n">choices</span><span class="p">,</span> <span class="n">aspiration</span><span class="p">,</span> <span class="n">last_choices</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_attraction</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13476,7 +13518,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">all_choices</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">choices</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13532,7 +13574,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">all_payoffs</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">payoffs</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13629,7 +13671,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">all_aspiration</span><span class="o">/</span><span class="n">num_reps</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">aspiration</span><span class="o">/</span><span class="n">num_reps</span>
 </pre></div>
 
     </div>
@@ -13688,7 +13730,7 @@ This method automates this process to avoid repeating every time.</p>
 <span class="n">style_choose</span> <span class="o">=</span> <span class="s2">&quot;softmax&quot;</span> <span class="c1"># &quot;softmax&quot;, &quot;greedy&quot;, &quot;aspiration&quot;, or e value as float for e-greedy</span>
 <span class="n">phi</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># not needed in &quot;over k&quot; updating mode</span>
 <span class="n">tau</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">/</span><span class="n">num_bandits</span>
-<span class="n">att_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+<span class="n">start_attraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
 <span class="c1">## Simulation</span>
 <span class="n">num_periods</span> <span class="o">=</span> <span class="mi">500</span>
 <span class="n">num_reps</span> <span class="o">=</span> <span class="mi">1000</span>
@@ -13735,7 +13777,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">all_payoffs</span><span class="p">,</span> <span class="n">all_knowledge</span><span class="p">,</span> <span class="n">all_RE</span><span class="p">,</span> <span class="n">all_choices</span><span class="p">,</span> <span class="n">all_aspiration</span><span class="p">,</span> <span class="n">last_choices</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_p</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">payoffs</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">,</span> <span class="n">RE</span><span class="p">,</span> <span class="n">choices</span><span class="p">,</span> <span class="n">aspiration</span><span class="p">,</span> <span class="n">last_choices</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">start_attraction</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13756,7 +13798,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">all_RE</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">RE</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13812,7 +13854,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">all_knowledge</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">knowledge</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13868,7 +13910,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">all_payoffs</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="n">payoffs</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13925,7 +13967,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">all_payoffs</span><span class="o">-</span><span class="n">num_reps</span><span class="p">)</span><span class="o">/</span><span class="n">num_reps</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">payoffs</span><span class="o">-</span><span class="n">num_reps</span><span class="p">)</span><span class="o">/</span><span class="n">num_reps</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13964,7 +14006,7 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">all_RE</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">num_reps</span><span class="o">*</span><span class="n">num_periods</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">RE</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">num_reps</span><span class="o">*</span><span class="n">num_periods</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -14003,8 +14045,8 @@ This method automates this process to avoid repeating every time.</p>
 <div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Period 400: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">all_knowledge</span><span class="p">[</span><span class="o">-</span><span class="mi">101</span><span class="p">]</span><span class="o">/</span><span class="n">num_reps</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Period 500: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">all_knowledge</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">num_reps</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Period 400: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">knowledge</span><span class="p">[</span><span class="o">-</span><span class="mi">101</span><span class="p">]</span><span class="o">/</span><span class="n">num_reps</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Period 500: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">knowledge</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">num_reps</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -14035,6 +14077,332 @@ Period 500: 0.5921675254266218
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="5.-Exercise">5. Exercise<a class="anchor-link" href="#5.-Exercise">&#182;</a></h2><p>What would happen if Posen and Levinthal had chosen other learning rules? They studied e-greedy but how about constant update? How woud it affect the erosion of knowledge and the adaptation of the agents?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Puranam-and-Swamy-(2016)">Puranam and Swamy (2016)<a class="anchor-link" href="#Puranam-and-Swamy-(2016)">&#182;</a></h1><p>In contrast to the prior papers, Phanisah and Maurati a coupled learning process where the decisions of one agent interact with the decisions of another to achieve high performance.<br>
+The fact that we now have two agents instead of one leads to create a new class. THis class is represents the organization and it is a wrapper structure so that when we run the simulation, the simulation function believes as if it is interacting with one agent, even though there are two.</p>
+<h2 id="1.-Organization-class">1. Organization class<a class="anchor-link" href="#1.-Organization-class">&#182;</a></h2><h3 id="1.1-Initialization">1.1 Initialization<a class="anchor-link" href="#1.1-Initialization">&#182;</a></h3><p>The organization class is initialized with two agents, Alice and Bob.</p>
+<h3 id="1.2-Learn-function">1.2 Learn function<a class="anchor-link" href="#1.2-Learn-function">&#182;</a></h3><p>The learn function is functionally equivalent to the learning function of the individual agents. However, there are replicated values stored. This is due to the fact that we need each agent to make a choice. The two choices are then sent to the bandit to get one payoff. The oayoff then is used to update the agent's attractions. Finally, we store instead of the choices, only whether the agents had the same choice in the specific period. We also store duplicates of the knowledge SSE per period and the exploration in the period.</p>
+<h3 id="1.3-Reset">1.3 Reset<a class="anchor-link" href="#1.3-Reset">&#182;</a></h3><p>The reset function is different from the prior cases. Here the values used to initialize the attractions at the start of every simulation are different for each agent. The agents in Puranam and Swamy (2016) have their attractions directly initialized every time the simulation starts. Each bandit gets a different and specific attraction. In contrast to the prior papers where beliefs at the start of the simulation for every bandit were homogenous, here the key aspect Phanish and Murati study is how differences in the initial representation affect coordination and thus require that the agents have very specific starting beliefs.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[448]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">organization</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">Bob</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alice</span> <span class="o">=</span> <span class="n">Alice</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bob</span> <span class="o">=</span> <span class="n">Bob</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">style_choose</span>
+    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">bandits</span><span class="p">):</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">coordination</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">payoffs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">knowledge</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">RE</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">):</span>
+            <span class="n">choice1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">choose</span><span class="p">()</span>
+            <span class="n">choice2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Bob</span><span class="o">.</span><span class="n">choose</span><span class="p">()</span>
+            <span class="n">payoff</span> <span class="o">=</span> <span class="n">bandits</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">choice1</span><span class="p">,</span> <span class="n">choice2</span><span class="p">)</span>
+            <span class="n">coordinate</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">choice1</span><span class="o">==</span><span class="n">choice2</span> <span class="ow">and</span> <span class="n">choice1</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">bandits</span><span class="o">.</span><span class="n">means</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">choice1</span><span class="p">,</span> <span class="n">payoff</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Bob</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">choice2</span><span class="p">,</span> <span class="n">payoff</span><span class="p">)</span>
+            <span class="n">nugget1</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span><span class="nb">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">attraction</span><span class="o">-</span><span class="n">bandits</span><span class="o">.</span><span class="n">means</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">nugget2</span> <span class="o">=</span> <span class="mi">1</span><span class="o">-</span><span class="nb">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Bob</span><span class="o">.</span><span class="n">attraction</span><span class="o">-</span><span class="n">bandits</span><span class="o">.</span><span class="n">means</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">choice1</span><span class="p">,</span> <span class="n">choice2</span><span class="p">])</span>
+            <span class="n">payoffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">payoff</span><span class="p">)</span>
+            <span class="n">knowledge</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">nugget1</span><span class="p">,</span> <span class="n">nugget2</span><span class="p">])</span>
+            <span class="n">coordination</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coordinate</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">re1</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">re2</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">choices</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">RE</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">re1</span><span class="p">,</span> <span class="n">re2</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_choose</span> <span class="o">==</span> <span class="s2">&quot;aspiration&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aspiration</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">aspiration</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Bob</span><span class="o">.</span><span class="n">aspiration</span><span class="p">]</span>
+        <span class="k">return</span><span class="p">([</span><span class="n">coordination</span><span class="p">,</span> <span class="n">payoffs</span><span class="p">,</span> <span class="n">knowledge</span><span class="p">,</span> <span class="n">RE</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">att</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Alice</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">att</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bob</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">att</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="2.-Initialize-values">2. Initialize values<a class="anchor-link" href="#2.-Initialize-values">&#182;</a></h2><p>In this simulation we need more parameters. We start with the bandit.</p>
+<h3 id="2.1-Bandit">2.1 Bandit<a class="anchor-link" href="#2.1-Bandit">&#182;</a></h3><p>Tehr are ten bandits. The bandits have a maximum value that appears when both agents choose option 2 (bingo!). IF not then a minimum value is given. Here, in contrast to Posen and Levinthal, I input the maximum and minimum values used by Phanish and Murati.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[449]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_bandits</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">val_max</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">val_min</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+<span class="n">bingo</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">flop</span> <span class="o">=</span> <span class="mi">9</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="2.2-Agents">2.2 Agents<a class="anchor-link" href="#2.2-Agents">&#182;</a></h3><p>the agents have constant phi values, and use softmax. This paper has the peculiarity that the agent's attractions are initialized at the start of the simulation to precise values. For this reason it uses the style_start = "fixed". That allows the organization to set the beliefs every time the simulation starts again.<br>
+In addition to tau and phi, in this paper there is a p value that represent how certain the agents are of their initial believes (1 for full certainty, 0 for no certainty).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[450]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">style_update</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span> <span class="c1"># &quot;constant&quot;, &quot;over k&quot; or &quot;aspiration&quot; </span>
+<span class="n">style_choose</span> <span class="o">=</span> <span class="s2">&quot;softmax&quot;</span> <span class="c1"># &quot;softmax&quot;, &quot;greedy&quot;, &quot;aspiration&quot;, or e value as float for e-greedy</span>
+<span class="n">style_start</span> <span class="o">=</span> <span class="s2">&quot;fixed&quot;</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="c1"># not needed in &quot;over k&quot; updating mode</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">p</span> <span class="o">=</span> <span class="mf">0.8</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="2.3-Simulation">2.3 Simulation<a class="anchor-link" href="#2.3-Simulation">&#182;</a></h3><p>In the paper, the simulation is run for 100 periods and 5k replications. Here, I do the same but if you run it online, it might be better to run less. The simulation is quite noisy as it has Bernoulli bandits but given that there are two agents, it takes much longer to run.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[459]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_periods</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">num_reps</span> <span class="o">=</span> <span class="mi">5000</span> <span class="c1"># 5000 typical</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Coupled-learning">Coupled learning<a class="anchor-link" href="#Coupled-learning">&#182;</a></h4><p>The agents have opinions about the bandits'payoffs before every simulation. How strong or weak the opinion is depends on the parameter p.<br>
+The belief are negative for every but one arm of the N-arm bandit. The chosen arm has a high belief. There are three different ways to initialize an agent, with good beliefs, bad beliefs or uniform beliefs. The combinations of these three are used to understand the performance implications of the initial beliefs in an organization.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[460]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">max_setting</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">val_max</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">val_min</span><span class="p">)</span>
+<span class="n">min_setting</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">val_min</span><span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">val_max</span><span class="p">)</span>
+<span class="c1"># Good beliefs</span>
+<span class="n">good</span> <span class="o">=</span> <span class="n">min_setting</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span>
+<span class="n">good</span><span class="p">[</span><span class="n">bingo</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_setting</span>
+<span class="c1"># Bad beliefs</span>
+<span class="n">bad</span> <span class="o">=</span> <span class="n">min_setting</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span>
+<span class="n">bad</span><span class="p">[</span><span class="n">flop</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_setting</span>
+<span class="c1"># Uniform beliefs</span>
+<span class="n">uniform</span> <span class="o">=</span> <span class="n">max_setting</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_bandits</span><span class="p">)</span><span class="o">/</span><span class="n">num_bandits</span>
+<span class="c1"># Organization settings</span>
+<span class="n">org_setting1</span> <span class="o">=</span> <span class="p">[</span><span class="n">bad</span><span class="p">,</span> <span class="n">bad</span><span class="p">]</span>
+<span class="n">org_setting2</span> <span class="o">=</span> <span class="p">[</span><span class="n">uniform</span><span class="p">,</span> <span class="n">uniform</span><span class="p">]</span>
+<span class="n">org_setting3</span> <span class="o">=</span> <span class="p">[</span><span class="n">good</span><span class="p">,</span> <span class="n">bad</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="3.-Initialize-agent-and-Bandits">3. Initialize agent and Bandits<a class="anchor-link" href="#3.-Initialize-agent-and-Bandits">&#182;</a></h2><p>Having the organization and environment we can run a simulation. We give the environment and the organization runs it by asking each agetn for its choices.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[461]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Alice</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">phi</span><span class="p">,</span> <span class="n">style_update</span> <span class="o">=</span> <span class="n">style_update</span><span class="p">,</span> <span class="n">style_choose</span> <span class="o">=</span> <span class="n">style_choose</span><span class="p">,</span> <span class="n">style_start</span> <span class="o">=</span> <span class="s2">&quot;fixed&quot;</span><span class="p">)</span>
+<span class="n">Bob</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">phi</span><span class="p">,</span> <span class="n">style_update</span> <span class="o">=</span> <span class="n">style_update</span><span class="p">,</span> <span class="n">style_choose</span> <span class="o">=</span> <span class="n">style_choose</span><span class="p">,</span> <span class="n">style_start</span> <span class="o">=</span> <span class="s2">&quot;fixed&quot;</span><span class="p">)</span>
+<span class="n">Inc</span> <span class="o">=</span> <span class="n">organization</span><span class="p">(</span><span class="n">Alice</span> <span class="o">=</span> <span class="n">Alice</span><span class="p">,</span> <span class="n">Bob</span> <span class="o">=</span> <span class="n">Bob</span><span class="p">)</span>
+<span class="n">options</span> <span class="o">=</span> <span class="n">bandits_P_S</span><span class="p">(</span><span class="n">num_bandits</span> <span class="o">=</span> <span class="n">num_bandits</span><span class="p">,</span> <span class="n">bingo</span> <span class="o">=</span> <span class="n">bingo</span><span class="p">,</span> <span class="n">val_max</span> <span class="o">=</span> <span class="n">val_max</span><span class="p">,</span> <span class="n">val_min</span> <span class="o">=</span> <span class="n">val_min</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="4.-Run-simulation">4. Run simulation<a class="anchor-link" href="#4.-Run-simulation">&#182;</a></h2><p>W3 run three simulation. One for each organizational setting. This is usefulto get the one plot of Figure 2a and 2b at once. Given that to make the plot we need two simulation, a third does not increase the time too much. It does take long.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[462]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">payoffs</span><span class="p">,</span> <span class="n">kn</span><span class="p">,</span> <span class="n">RE</span><span class="p">,</span> <span class="n">coordination</span><span class="p">,</span> <span class="n">asp</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Inc</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">org_setting1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">payoffs2</span><span class="p">,</span> <span class="n">kn2</span><span class="p">,</span> <span class="n">RE2</span><span class="p">,</span> <span class="n">coordination2</span><span class="p">,</span> <span class="n">asp2</span><span class="p">,</span> <span class="n">last2</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Inc</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">org_setting2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">payoffs3</span><span class="p">,</span> <span class="n">kn3</span><span class="p">,</span> <span class="n">RE3</span><span class="p">,</span> <span class="n">coordination3</span><span class="p">,</span> <span class="n">asp3</span><span class="p">,</span> <span class="n">last3</span> <span class="o">=</span> <span class="n">run_simulation</span><span class="p">(</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">num_periods</span><span class="p">,</span> <span class="n">Inc</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">org_setting3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="5.-Display-results:-Relative-coordination">5. Display results: Relative coordination<a class="anchor-link" href="#5.-Display-results:-Relative-coordination">&#182;</a></h3><p>We present just the results shown on Figures 2a and 2b. These results relate to the percentage of times the agents chose the correct answer. However, there is more data available in case you interested. We log the amount of exploration each agent does, the accuracy of their knowledge, the amount of coordinatation (i.e. times the chose the correct bandit), the aspiration levels, and last choices.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[463]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="p">(</span><span class="n">coordination</span><span class="o">-</span><span class="n">coordination2</span><span class="p">)</span><span class="o">/</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[463]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;matplotlib.collections.PathCollection at 0xf3788d0748&gt;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[464]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_periods</span><span class="p">),</span> <span class="p">(</span><span class="n">coordination</span><span class="o">-</span><span class="n">coordination3</span><span class="p">)</span><span class="o">/</span><span class="n">num_reps</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s2">&quot;red&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[464]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;matplotlib.collections.PathCollection at 0xf378922cf8&gt;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="References">References<a class="anchor-link" href="#References">&#182;</a></h1><ul>
 <li>Denrell, J., &amp; March, J. G. (2001). Adaptation as information restriction: The hot stove effect. Organization Science, 12(5), 523-538.   </li>
 <li>Posen, H. E., &amp; Levinthal, D. A. (2012). Chasing a moving target: Exploitation and exploration in dynamic environments. Management Science, 58(3), 587-601.</li>
@@ -14070,10 +14438,10 @@ Period 500: 0.5921675254266218
 
 
 
-<div id="da9df9d7-379d-4ab3-9c97-9fb87fa57130"></div>
+<div id="f7ec7dba-6fd3-4ed3-a316-055ea8a956d9"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#da9df9d7-379d-4ab3-9c97-9fb87fa57130');
+var element = $('#f7ec7dba-6fd3-4ed3-a316-055ea8a956d9');
 $.getScript('https://kmahelona.github.io/ipython_notebook_goodies/ipython_notebook_toc.js')
 
 </script>
