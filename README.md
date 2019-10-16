@@ -1,7 +1,7 @@
 # bandits
 This repo includes the code for running some of the seminal papers on organizational learning under uncertainty.    
 
-Currently, it includes the code for Denrell and March (2001), Posen and Levinthal (2012), and a full tutorial where the same agents and bandits replicate both papers and also Puranam and Swamy (2016).
+Currently, it includes the standaalone code for Denrell and March (2001) and Posen and Levinthal (2012), and a full tutorial where the same agents and bandits replicate both papers and also Puranam and Swamy (2016).  
 
 The next code to be included is a standalone version of Puranam and Swamy (2016). After that I will start doing T-mazes and labyrithns.  
 
