@@ -50,7 +50,7 @@
 # ### 4. Reset
 # This function resets the attractions of the agent. It takes one value, the number of bandits in the environment.  
 
-# In[147]:
+# In[1]:
 
 
 import numpy as np
@@ -131,7 +131,7 @@ class agent:
 # ### Measure
 # The bandits perform one function, when called upon, they give one output, centered around a mean value and with an added noise. The style of bandit determines where the noise is drawn upon.
 
-# In[7]:
+# In[2]:
 
 
 class bandit:
@@ -184,7 +184,7 @@ class bandits_D_M:
 # #### Reset
 # This function makes new bandits for every arm of the bandit. 
 
-# In[ ]:
+# In[4]:
 
 
 class bandits_P_L:
@@ -216,7 +216,7 @@ class bandits_P_L:
 # #### Reset
 # This function does not operate. 
 
-# In[215]:
+# In[5]:
 
 
 class bandits_P_S:
@@ -236,23 +236,29 @@ class bandits_P_S:
 # This tutorail runs several simulations. All of them follow the same structure, they include agents, and environments. The agents explore the environment for a number of periods and then this is repeated again. The iterated process is stored and used for our analyses.  
 # This method automates this process to avoid repeating every time. 
 
-# In[173]:
+# In[6]:
 
 
 def run_simulation(num_reps, num_periods, Alice, options, start_attraction, n=1):
     all_payoffs = np.zeros((num_periods))
-    all_knowledge = np.zeros((num_periods,n))
-    all_RE = np.zeros((num_periods,n))
     all_choices = np.zeros(num_periods)
-    all_aspiration = [0.0]*n
+    last_choices = []
+    if n == 1:
+        all_knowledge = np.zeros(num_periods)
+        all_RE = np.zeros(num_periods)
+        all_aspiration = [0.0]
+    if n > 1:
+        all_knowledge = np.zeros((num_periods,n))
+        all_RE = np.zeros((num_periods,n))
+        all_aspiration = [0.0]*n
     last_choices = []
     for j in range(num_reps):
         Alice.reset(means = options.means, att = start_attraction)     
         options.reset()
         choice, payoff, knowledge, re = Alice.learn(num_periods, options)
         all_payoffs = np.add(all_payoffs, payoff)
-        all_knowledge = np.add(all_knowledge, knowledge)
-        all_RE = np.add(all_RE, re)
+        all_knowledge = np.add(all_knowledge, np.array(knowledge))
+        all_RE = np.add(all_RE, np.array(re))
         # Specific for this paper
         all_choices = np.add(all_choices, choice)
         if Alice.style_choose == "aspiration": all_aspiration += Alice.aspiration
@@ -270,7 +276,7 @@ def run_simulation(num_reps, num_periods, Alice, options, start_attraction, n=1)
 # 
 # **Note:** The bandits were specificed as outputing 0 and 1. Posen and Denrell mix their outputs as their environment outputs -1 and 1. I go back to that notation when I estimate the accumulated payoff. However for the bulk of the simulation, I estimate the probability of success only.
 
-# In[6]:
+# In[7]:
 
 
 ## Bandits
@@ -292,7 +298,7 @@ num_reps = 5000
 # ## 2. Initialize agent and Bandits
 # We create one agent, Alice and initialize the environment for the paper. The bandits are created by specifying first two agents one drawn from an uniform distribution and the second one from a stable value.
 
-# In[7]:
+# In[8]:
 
 
 Alice = agent(tau = a, phi = b, style_update = style_update, style_choose = style_choose)
@@ -304,10 +310,10 @@ options = bandits_D_M(means = [X,Y], noise = S)
 # 
 # * **This takes some time.**
 
-# In[8]:
+# In[9]:
 
 
-payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_reps, num_periods, Alice, options, start_attraction)
+payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_reps, num_periods, Alice, options, start_attraction, n = 1)
 
 
 # ## 4. Display results
@@ -316,7 +322,7 @@ payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_r
 # We present two plots. The first one presents the option chosen on every period. As on every period the agent can choose 0 or 1, what we plot in the y-axis is the number of times the stable option is chosen. As expected, the first period starts at 50% of the time and it increases towards a 100% as time goes by.
 # 
 
-# In[9]:
+# In[10]:
 
 
 plt.scatter(range(num_periods), choices)
@@ -325,7 +331,7 @@ plt.scatter(range(num_periods), choices)
 # ### Performance as function of time
 # The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
 
-# In[10]:
+# In[11]:
 
 
 plt.scatter(range(num_periods), payoffs)
@@ -335,7 +341,7 @@ plt.scatter(range(num_periods), payoffs)
 # #### Fraction of individuals who choose the risky alternative
 # Both options have the same performance. Nonetheless, the risky option is chosen less than 1% of the time after 50 periods when b = 0.5, and around 30% of time if b = 0.1. X=Y=S=10.0 
 
-# In[11]:
+# In[12]:
 
 
 100*(1-float(sum(last_choices))/num_reps)
@@ -344,7 +350,7 @@ plt.scatter(range(num_periods), payoffs)
 # #### Average aspiration level at the end of each simulation   
 # The average aspiration at the end of each simulation was:
 
-# In[12]:
+# In[13]:
 
 
 aspiration/num_reps
@@ -361,7 +367,7 @@ aspiration/num_reps
 # 
 # **Note:** A phi value was added in case you want to explore how agents would differ if the do not update with the 1/k+1 mode.  
 
-# In[13]:
+# In[14]:
 
 
 ## Bandit
@@ -381,7 +387,7 @@ num_reps = 1000
 # ## 2. Initialize agent and Bandits
 # Having the agent and environment we can run a simulation. We give the environment and the agents and run it. 
 
-# In[14]:
+# In[15]:
 
 
 Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose)
@@ -393,10 +399,10 @@ options = bandits_P_L(num_bandits = num_bandits, eta = eta)
 # 
 # This takes some time.
 
-# In[15]:
+# In[16]:
 
 
-payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_reps, num_periods, Alice, options, start_attraction)
+payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_reps, num_periods, Alice, options, start_attraction, n =1)
 
 
 # ## 4. Display results
@@ -404,16 +410,16 @@ payoffs, knowledge, RE, choices, aspiration, last_choices = run_simulation(num_r
 # ### Amount of exploration
 # First we present the amount of exploration done by the agents. 
 
-# In[16]:
+# In[17]:
 
 
-plt.scatter(range(num_periods), RE)
+RE
 
 
 # ### Knowledge over time
 # Somthing quite sad happens for the amount of knowledge over time in this paper. Given the way the Bush Mossteller equation is updated, 1/k+1 and not with a constant update percentage, initial values have much more weight that later values. This leads to the system to erode knowledge. **Fast!**
 
-# In[17]:
+# In[18]:
 
 
 plt.scatter(range(num_periods), knowledge)
@@ -422,7 +428,7 @@ plt.scatter(range(num_periods), knowledge)
 # ### Probability of Getting a Reward
 # The second graph presents the average payoff. This looks like a funnel, narrowing from left to right. As the stable option is chosen more and more, the variance in the performanc decreases. 
 
-# In[18]:
+# In[19]:
 
 
 plt.scatter(range(num_periods), payoffs)
@@ -434,7 +440,7 @@ plt.scatter(range(num_periods), payoffs)
 # 
 # The result shown below is the performance of Figure 1 in Posen and Levinthal (2012).
 
-# In[19]:
+# In[20]:
 
 
 print(sum(2*payoffs-num_reps)/num_reps)
@@ -443,7 +449,7 @@ print(sum(2*payoffs-num_reps)/num_reps)
 # #### Fraction of exploration events
 # The average percentage of exploration events during the 500 periods, see Figure 1 in Posen and Levinthal (2012) for comparison. 
 
-# In[20]:
+# In[21]:
 
 
 print(sum(RE)/(num_reps*num_periods))
@@ -452,7 +458,7 @@ print(sum(RE)/(num_reps*num_periods))
 # #### Knowledge  
 # The average SSE knowledge at different stages of the simulation. This result is shown in Figure 1 of Posen and Levinthal (2012) and in Figure 4 when the turbulence changes.
 
-# In[21]:
+# In[22]:
 
 
 print("Period 400: " + str(knowledge[-101]/num_reps))
@@ -476,7 +482,7 @@ print("Period 500: " + str(knowledge[-1]/num_reps))
 # ### 1.3 Reset
 # The reset function is different from the prior cases. Here the values used to initialize the attractions at the start of every simulation are different for each agent. The agents in Puranam and Swamy (2016) have their attractions directly initialized every time the simulation starts. Each bandit gets a different and specific attraction. In contrast to the prior papers where beliefs at the start of the simulation for every bandit were homogenous, here the key aspect Phanish and Murati study is how differences in the initial representation affect coordination and thus require that the agents have very specific starting beliefs. 
 
-# In[448]:
+# In[23]:
 
 
 class organization():
@@ -521,7 +527,7 @@ class organization():
 # ### 2.1 Bandit
 # Tehr are ten bandits. The bandits have a maximum value that appears when both agents choose option 2 (bingo!). IF not then a minimum value is given. Here, in contrast to Posen and Levinthal, I input the maximum and minimum values used by Phanish and Murati.
 
-# In[449]:
+# In[24]:
 
 
 num_bandits = 10
@@ -535,7 +541,7 @@ flop = 9
 # the agents have constant phi values, and use softmax. This paper has the peculiarity that the agent's attractions are initialized at the start of the simulation to precise values. For this reason it uses the style_start = "fixed". That allows the organization to set the beliefs every time the simulation starts again.  
 # In addition to tau and phi, in this paper there is a p value that represent how certain the agents are of their initial believes (1 for full certainty, 0 for no certainty).
 
-# In[450]:
+# In[25]:
 
 
 style_update = "constant" # "constant", "over k" or "aspiration" 
@@ -549,22 +555,34 @@ p = 0.8
 # ### 2.3 Simulation
 # In the paper, the simulation is run for 100 periods and 5k replications. Here, I do the same but if you run it online, it might be better to run less. The simulation is quite noisy as it has Bernoulli bandits but given that there are two agents, it takes much longer to run.
 
-# In[459]:
+# In[26]:
 
 
 num_periods = 100
 num_reps = 5000 # 5000 typical
 
 
-# #### Coupled learning
+# ### 2.4 Coupled learning
 # The agents have opinions about the bandits'payoffs before every simulation. How strong or weak the opinion is depends on the parameter p.   
+# 
 # The belief are negative for every but one arm of the N-arm bandit. The chosen arm has a high belief. There are three different ways to initialize an agent, with good beliefs, bad beliefs or uniform beliefs. The combinations of these three are used to understand the performance implications of the initial beliefs in an organization. 
+# 
+# #### 2.4.1 Strength of initial beliefs
+# The agents have beliefs of different strength (p), The agents initialize every bandit as a low value except the one one they believe has the highest value. Some agents have good beliefs, some bad, and some have no beliefs (). 
 
-# In[460]:
+# In[27]:
 
 
 max_setting = (p*val_max + (1-p)*val_min)
 min_setting = (p*val_min+(1-p)*val_max)
+
+
+# #### 2.4.2 Good, bad, and uniform beliefs
+# The agents with good beliefs have an accurate understanding of the payoff distribution. The agents with bad beliefs start thinking that a bandit has a high payoff but it does not. The agents with uniform beliefs have uniformly high beliefs for all bandits. 
+
+# In[28]:
+
+
 # Good beliefs
 good = min_setting*np.ones(num_bandits)
 good[bingo] = max_setting
@@ -573,7 +591,14 @@ bad = min_setting*np.ones(num_bandits)
 bad[flop] = max_setting
 # Uniform beliefs
 uniform = max_setting*np.ones(num_bandits)/num_bandits
-# Organization settings
+
+
+# #### 2.4.3 Organizational setting
+# Finally, we create types of organizational beliefs. There are three types, homogenously bad beleifs, uniform beliefs, and heterogenous beliefs with one agent having good beliefs and bad beliefs. 
+
+# In[29]:
+
+
 org_setting1 = [bad, bad]
 org_setting2 = [uniform, uniform]
 org_setting3 = [good, bad]
@@ -582,7 +607,7 @@ org_setting3 = [good, bad]
 # ## 3. Initialize agent and Bandits
 # Having the organization and environment we can run a simulation. We give the environment and the organization runs it by asking each agetn for its choices. 
 
-# In[461]:
+# In[30]:
 
 
 Alice = agent(tau = tau, phi = phi, style_update = style_update, style_choose = style_choose, style_start = "fixed")
@@ -592,9 +617,9 @@ options = bandits_P_S(num_bandits = num_bandits, bingo = bingo, val_max = val_ma
 
 
 # ## 4. Run simulation
-# W3 run three simulation. One for each organizational setting. This is usefulto get the one plot of Figure 2a and 2b at once. Given that to make the plot we need two simulation, a third does not increase the time too much. It does take long. 
+# We run three simulation. One for each organizational setting. This is usefulto get the one plot of Figure 2a and 2b at once. Given that to make the plot we need two simulation, a third does not increase the time too much. It does take long. 
 
-# In[462]:
+# In[31]:
 
 
 payoffs, kn, RE, coordination, asp, last = run_simulation(num_reps, num_periods, Inc, options, org_setting1, 2)
@@ -602,16 +627,16 @@ payoffs2, kn2, RE2, coordination2, asp2, last2 = run_simulation(num_reps, num_pe
 payoffs3, kn3, RE3, coordination3, asp3, last3 = run_simulation(num_reps, num_periods, Inc, options, org_setting3, 2)
 
 
-# ### 5. Display results: Relative coordination
+# ## 5. Display results: Relative coordination
 # We present just the results shown on Figures 2a and 2b. These results relate to the percentage of times the agents chose the correct answer. However, there is more data available in case you interested. We log the amount of exploration each agent does, the accuracy of their knowledge, the amount of coordinatation (i.e. times the chose the correct bandit), the aspiration levels, and last choices. 
 
-# In[463]:
+# In[32]:
 
 
 plt.scatter(range(num_periods), (coordination-coordination2)/num_reps, c = "blue")
 
 
-# In[464]:
+# In[33]:
 
 
 plt.scatter(range(num_periods), (coordination-coordination3)/num_reps, c = "red")
@@ -625,8 +650,14 @@ plt.scatter(range(num_periods), (coordination-coordination3)/num_reps, c = "red"
 # 
 # **Note:** The code below builds the table of contents
 
-# In[1]:
+# In[35]:
 
 
 get_ipython().run_cell_magic('javascript', '', "$.getScript('https://kmahelona.github.io/ipython_notebook_goodies/ipython_notebook_toc.js')")
+
+
+# In[ ]:
+
+
+
 
