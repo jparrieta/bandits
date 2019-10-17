@@ -13,6 +13,7 @@ It takes a while to load. After loading, click any \*.ipynb  and you will be abl
 
 # log    
 
+**191017:** Added barebons version of Puranam and Swamy (2016).  
 **191016:** Added Puranam and Swamy (2016) to the full tutorial.  
 **190927:** Fixed a bug in e-greedy and created a run_simulation function in the full tutorial.   
 **190916:** Added a full_tutorial where with all papers one after the other. Added direct replications of both papers.  
