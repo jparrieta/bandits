@@ -31,7 +31,9 @@
 # ### 2. Update
 # Updating is done via the Bush-Mossteller equation with the change. The parameter phi determines how much the agent updates its beliefs when faced with new information. A value of zero leads to agents to not update their beliefs. A value of one to full change of  their beliefs. A mixture leads to what is known as an Exponentially Recency Weighted Average (Sutton and Barto, 1998). The agents have a constant phi value, which allow them to be responsive to changes in the environment even in late stages.
 # The first change with the standard Sutton and Barto formula is the addition of a gamma parameter that links the current state's payoff with the payoff in the next state chosen. This is what is meant by credit assignment as when the problem is solve the credit is shared back to the prior positions in the solution. 
-# The second change is the inclusion of a multi-level credit assignment. The feedback in this case is not linked to the position behind the payoff but also to the lambda steps before.
+# The second change is the inclusion of a multi-level credit assignment. The feedback in this case is not linked to the position behind the payoff but also to the lambda steps before.  
+# ### Note: 
+# During the update process if at some point the value to add is higher than one, I replace it for 1. Therefore this simulation work ONLY for bandits with val_max <= 1. This is needed to replicate the Figure 1. If not, we get values higher than one. 
 
 # In[1]:
 
@@ -92,15 +94,17 @@ class agent:
     def update(self, log_state, log_choice, next_state, payoff):
         log_state.reverse()
         log_choice.reverse()
-        self.attraction[log_state[0]][log_choice[0]] = (self.attraction[log_state[0]][log_choice[0]]*(1-self.phi) 
-                                                      + self.phi*(payoff+self.gamma*np.max(self.attraction[next_state])))
+        update = (self.attraction[log_state[0]][log_choice[0]]*(1-self.phi) + self.phi*(payoff+self.gamma*np.max(self.attraction[next_state])))
+        if update > 1.0: update = 1.0
+        self.attraction[log_state[0]][log_choice[0]] = update
         if len(log_state) > 1 and self.lamb > 1: 
             next_state = log_state[0]
             if len(log_state) > self.lamb: depth = range(self.lamb-1)
             else: depth = range(len(log_state)-1)
             for i in depth:
-                self.attraction[log_state[i+1]][log_choice[i+1]] = (self.attraction[log_state[i]][log_choice[i]]*(1-self.phi) 
-                                                       + self.phi*self.gamma*np.max(self.attraction[next_state]))
+                update = (self.attraction[log_state[i]][log_choice[i]]*(1-self.phi) + self.phi*self.gamma*np.max(self.attraction[next_state]))
+                if update > 1.0: update = 1.0
+                self.attraction[log_state[i+1]][log_choice[i+1]] = update
                 next_state = log_state[i]
     def staircase(self):
         d = {"policies": [key for key in self.attraction.keys()],
@@ -162,7 +166,7 @@ class bandit:
 # In[4]:
 
 
-class bandits_P_S:
+class bandits_DFL:
     def __init__(self, bingo, val_max, val_min): 
         self.arms = [bandit(mean = val_max), bandit(mean = val_min)]
         self.bingo = bingo
@@ -173,7 +177,7 @@ class bandits_P_S:
 
 # # Simulation
 # 
-# With the previous three building blocks, we can run a simulation to replicate the main findings of Denrell, Fang, and Levinthal (2004).
+# With the previous two building blocks, we can run a simulation to replicate the main findings of Denrell, Fang, and Levinthal (2004).
 # 
 # ## 1. Initialize values
 # The first thin we need to do is initialize each module. That is, set how the agents learn, and how the environment is built.  
@@ -224,7 +228,7 @@ start_state = [] # random
 
 
 Alice = agent(phi = phi, gamma = gamma, N = num_bandits, lamb = lamb)
-Labyrinth = bandits_P_S(bingo = bingo, val_min = val_min, val_max = val_max)
+Labyrinth = bandits_DFL(bingo = bingo, val_min = val_min, val_max = val_max)
 
 
 # ## 3. Run simulation
@@ -273,30 +277,39 @@ print("Final simulation done. Total time: " + str(round(time()-t)) + " seconds."
 
 
 # ## 4.  Display results
-# I first plot the results of Figure 1 in the paper, where the mental models are shown. The values here are higher than 1. I guess I have a bug, but not sure where.
+# I first plot the results of Figure 1 in the paper, where the mental models are shown. The values here are higher than 1. I guess I have a bug, but not sure where. 
 
-# In[11]:
+# In[31]:
 
 
-plt.scatter(range(1, num_bandits+1), m1)
-plt.scatter(range(1, num_bandits+1), m2)
+x_pos = range(1,len(m1)+1)
+x_pos2 = [x+0.5 for x in x_pos]
+performance = [10,8,6,4,2,1]
+
+plt.bar(x_pos, m1, width = 1/3, label = "Gamma = 0.9")
+plt.bar(x_pos2, m2, width = 1/3, label = "Gamma = 0.0")
+#plt.xticks(x_pos, objects)
+plt.ylabel('Average Max Q Value')
+plt.xlabel("Hamming Distance")
+plt.legend()
+plt.show()
 
 
 # I now present the results of replicating the Figures 2 and 4 of the Denrell, Fang, and Levinthal (2004) paper. We merge the two figures into one. The orange dots are from Figure 3, the green and red from Figure 4. The blue dots are in both figures. 
 
-# In[13]:
+# In[34]:
 
 
-plt.scatter(range(50), length1[:50])
-plt.scatter(range(50), length2[:50])
-plt.scatter(range(50), length3[:50])
-plt.scatter(range(50), length4[:50])
+plt.scatter(range(50), length1[:50], label = "Gamma = 0.9, Lambda = 1")
+plt.scatter(range(50), length2[:50], label = "Gamma = 0.0, Lambda = 1")
+plt.scatter(range(50), length3[:50], label = "Gamma = 0.9, Lambda = 5")
+plt.scatter(range(50), length4[:50], label = "Gamma = 0.9, Lambda = 30")
 plt.axis((0,50,0,500))
+plt.ylabel("Average Number of Steps to Reach Exit")
+plt.xlabel("Period")
+plt.legend()
 plt.show()
 
 
 # ## 5. Exercise
-# What would happen if instead of starting all beliefs at zero we started them at 0.5? or a random value?
-# 
-# ## 6. Question
-# Should one update the value at the end? After exit? It is unclear to me, but the simulation changes a lot if it is not done.  
+# What would happen if instead of starting all beliefs at zero we started them at 0.5? or a random value?  
