@@ -3,7 +3,7 @@ This repo includes the code for running some of the seminal papers on organizati
 
 Currently, it includes the standaalone code for Denrell and March (2001), Posen and Levinthal (2012), Puranam and Swamy (2016), Denrell, Fang, and Levinthal (2004), and a full tutorial where the same agents and bandits replicate the first three papers.
 
-The next code to be included is Piezunka, Aggarwal, and Posen (2020).  
+The next step is to integrate Denrell, Fang, and Levinthal (2004) in the full tutorial. Or at least introduce a bit fo cleverness to the agents of that tutorial.  
 
 # run online [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jparrieta/bandits/master)  
 You can run this code directly by opening the following binder in your browser or clicking the button above.  
@@ -13,7 +13,7 @@ It takes a while to load. After loading, click any \*.ipynb  and you will be abl
 
 # log    
 
-**200518:** Added Denrell, Fang, and Levinthal (2004). First Labyrinth!
+**200518:** Added Denrell, Fang, and Levinthal (2004). First Labyrinth!  
 **191105:** Simplified the barebone version of Puranam and Swamy (2016).  
 **191017:** Added standalone version of Puranam and Swamy (2016).  
 **191016:** Added Puranam and Swamy (2016) to the full tutorial.  
